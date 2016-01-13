@@ -1,3 +1,4 @@
+Require Import case_coq.
 Require Import List.
 Require Import Coq.Sets.Constructive_sets.
 Require Import Coq.Arith.EqNat.
@@ -33,6 +34,7 @@ inversion H.
 assert ((Ex')-A = A'). rewrite <- H18. auto.
 assert ((Ex')-vis = vis'). rewrite <- H18. auto. 
 assert ((Ex')-so = so'). rewrite <- H18. auto.
+
 assert ((Ex)-A = A). rewrite <- H16. auto.
 assert ((Ex)-vis = vis). rewrite <- H16. auto. 
 assert ((Ex)-so = so). rewrite <- H16. auto.
@@ -48,7 +50,8 @@ apply FW. intuition.
 
 
 (*--------------------------------------------------------Proof of WF1 =  acyclicity of hb' *)(*3 Equal statements are proved instead*)
-(*H17 = ~vis' a a *)
+(*H17 = ~vis' a a *) 
+Case "Prooving acyclicity of vis'".
 assert (forall a:Effect, A' a -> ~ vis' a a). rewrite <- H23. rewrite <- H22. 
 assert ({Θ|-Ex,< s0, i0, op0 >  ~r~> Ex', η} -> ((forall a:Effect, Ex'-A a -> ~ Ex'-vis a a))). apply Vis'_Acyclicity. 
 apply FW;auto. intuition.

@@ -7,18 +7,17 @@ Require Import Coq.Arith.Compare_dec.
 Require Import parametes_coq.
 Require Import config_coq.
 Require Import oper_semantic_coq.
-
 Import Config.
 Import parameters.
 Import Operational_Semantics.
 
-
 Infix "∩" := Rel_Intersect (at level 10).
 Infix "∪" := Rel_Union (at level 0).
 
+(*****************DEFINITIONS******************)
 
-Parameter WF : Exec->Prop. (*Well-Formedness of an Execution*)
-
+(*Well-Formedness of an Execution*)
+Parameter WF : Exec->Prop.
 (*Well-Formedness of an Execution is equal to *)
 Definition WF1 (Ex:Exec):Prop := forall (a:Effect), (Ex-A a) ->  ~(Ex-hb a a).
 Definition WF2 (Ex:Exec) :=forall (a b : Effect), (Ex-A a) -> (Ex-A b) -> (Ex-vis a b)-> (Ex-sameobj a b).
@@ -26,7 +25,13 @@ Definition WF3 (Ex:Exec) := forall (a b c: Effect), (Ex-so a b)/\(Ex-so b c) -> 
 Definition WF4 (Ex:Exec) := forall (a:Effect), (Ex-A a) -> (Ex-sameobj a a).
 Definition WF5 (Ex:Exec) := forall (a b : Effect),(Ex-A a) -> (Ex-A b) ->   (Ex-sameobj a b)-> (Ex-sameobj b a).
 Definition WF6 (Ex:Exec) :=forall  (a b c: Effect), (Ex-A a) -> (Ex-A b) ->(Ex-A c) -> (Ex-sameobj a b)/\(Ex-sameobj b c) -> (Ex-sameobj a c ).
+(*Definition6 of Paper: Causually Consistent Stores*)
+Definition CausCons (Θ:Store)(Ex:Exec):= 
+                                        forall (r: ReplID) (a η:Effect) (A: Exec_A) (vis so sameobj : Relation), 
+                                                                                            ((Θ r) η) -> (Ex= (E A vis so sameobj)-> A a -> (((hbo Ex) a η)-> ((Θ r) a))). 
 
+
+(*****************AXIOMS******************)
 Axiom FW: forall (Ex:Exec), (WF1 Ex) ->(WF2 Ex) ->(WF3 Ex) ->(WF4 Ex) ->(WF5 Ex) ->(WF6 Ex) ->(WF Ex). (*WF1 to WF6 result WF*)
 Axiom WFhelp: forall (Ex:Exec), (WF Ex)->(WF1 Ex)/\(WF2 Ex)/\(WF3 Ex)/\(WF4 Ex)/\(WF5 Ex)/\(WF6 Ex). (*and vice versa*)
 
