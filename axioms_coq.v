@@ -1,3 +1,4 @@
+Add LoadPath "/Users/Kiarash/Desktop/Quelea Coq/Test_PG".
 Require Import List.
 Require Import Coq.Sets.Constructive_sets.
 Require Import Coq.Arith.EqNat.
@@ -53,6 +54,8 @@ Axiom  SO_NewEff: forall (Θ: Store)(Ex Ex':Exec) (opk:op_key)(η:Effect)(r:Repl
 (*So holds if an effects precedes another*)
 Axiom  SO_Seq : forall (Ex:Exec)(a b c:Effect), Ex-so a b -> seq b = seq c - 1 -> Ex-so a c.
 Axiom SO_SeqII : forall (Ex:Exec)(a b :Effect), seq a = seq b -1  -> Ex-so a b.
+Axiom  SO_SeqIII : forall (Ex:Exec)(a b c:Effect), Ex-so a b -> Ex-so b c  -> Ex-so a c.
+
 
 (*Claimed in the paper:  3 equal statements to the acyclicity of hb*)
 Axiom PaperH8: forall (Ex:Exec)(eff:Effect),~ (Ex-hb eff eff)->

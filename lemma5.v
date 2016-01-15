@@ -15,110 +15,61 @@ Import parameters.
 Import Operational_Semantics.
 
 (**************************************************************************************************)
-(*****************************************Lemma 5 of the Paper *******************************)
-
+(*************************************** Lemma 5 of the Paper *************************************)
 Theorem Lemma5: forall (Θ: Store)(Ex Ex':Exec) (s:SessID) (i:SeqNo)(op:OperName)(η:Effect)(r:ReplID),
                                        {Θ|-Ex, <s,i,op> ~r~> Ex', η} -> (WF Ex) -> (WF Ex').
 
-Proof. intuition. apply WFhelp in H0. intuition.
-(*---------------------------------------------Paper H8*) (*3 equal statements to acyclicity of hb *)
-(*H14*) assert (forall eff,~ (Ex-hb eff eff)-> (forall x:Effect, Ex-A x -> ~ Ex-vis x x)).
-                          unfold WF1 in H1. intros. specialize (H1 x). intuition. apply PaperH8 in H9. intuition.
-(*H15*) assert (forall eff,~ (Ex-hb eff eff)-> (forall x:Effect, Ex-A x -> ~ Ex-so x x)).
-                          unfold WF1 in H1. intros. specialize (H1 x). intuition. apply PaperH8 in H10. intuition.
-(*H16*) assert (forall a:Effect, ~(Ex) -hb a a -> (forall x y:Effect, (*(Ex-A x)->(Ex-A y)->*) ~(Ex-vis x y /\ Ex-so y x ))).
-                          intros. apply PaperH8II. 
+Proof.
+  
+  intros Θ Ex Ex' s i op η r. intros H_reduct H_WF.    
+  (*Inversion on the reduction*)
+  inversion H_reduct;
+  clear H9 H1 H0 H H2 H5 s0 i0 op0 η0;rename H3 into  H_η; rename H4 into  H_η'; rename H7 into H_vis';
+  rename H10 into H_so';rename H11 into H_sameobj';rename H6 into H_Exec; rename H8 into H_Exec'.
 
-(*Facts that will be needed*)
-inversion H.
-assert ((Ex')-A = A'). rewrite <- H18. auto.
-assert ((Ex')-vis = vis'). rewrite <- H18. auto. 
-assert ((Ex')-so = so'). rewrite <- H18. auto.
+  (*Trivial assertions*)
+  assert ((Ex')-A = A')                as H_EX'A.      rewrite <- H_Exec'; auto.
+  assert ((Ex')-vis = vis')            as H_EX'vis.    rewrite <- H_Exec'; auto. 
+  assert ((Ex')-so = so')              as H_EX'so.     rewrite <- H_Exec'; auto.
+  assert ((Ex')-sameobj = sameobj')    as H_EX'sameobj.  rewrite <- H_Exec'; auto.
 
-assert ((Ex)-A = A). rewrite <- H16. auto.
-assert ((Ex)-vis = vis). rewrite <- H16. auto. 
-assert ((Ex)-so = so). rewrite <- H16. auto.
-assert ( forall (Θ: Store)(Ex Ex':Exec) (opk:op_key)(η:Effect)(r:ReplID),
-                      {Θ|-Ex, opk ~r~> Ex', η} -> (forall a:Effect, Θ r a -> ~ Ex-so η a)). apply SO_NewEff. 
-assert (forall (Ex:Exec)(a b c:Effect), Ex-so a b -> seq b = seq c - 1 -> Ex-so a c). apply SO_Seq.
-assert (forall (Ex:Exec)(a b :Effect), seq a = seq b -1  -> Ex-so a b). apply SO_SeqII.
-assert (seq η' =  i0 - 1). specialize (H14 η'). intuition.
-assert  (forall a : Effect,((Ex)-A a -> (Ex) -hb a a -> False)). intuition. 
-
-(*--------------------------------------------Paper H8*) (*Break the goal into 6 subgoals equal to it*)
-apply FW. intuition. 
+  (*so is transitive*)
+  assert (forall (Ex:Exec)(a b c:Effect), (Ex-so a b)->(Ex-so b c)->(Ex-so a c)) as H_soTrans. apply SO_SeqIII.
+ 
+(******************The goal is to prove well formedness of the Ex', based on the 
+                   definition of well formedness, now break it into 6 subgoals *)
+  apply FW.
 
 
-(*--------------------------------------------------------Proof of WF1 =  acyclicity of hb' *)(*3 Equal statements are proved instead*)
-(*H17 = ~vis' a a *) 
-Case "Prooving acyclicity of vis'".
-assert (forall a:Effect, A' a -> ~ vis' a a). rewrite <- H23. rewrite <- H22. 
-assert ({Θ|-Ex,< s0, i0, op0 >  ~r~> Ex', η} -> ((forall a:Effect, Ex'-A a -> ~ Ex'-vis a a))). apply Vis'_Acyclicity. 
-apply FW;auto. intuition.
+  Case "----------------Proof of WF1".
+        {apply hb'_Acyclicity in H_reduct. rewrite <- H_Exec' in H_reduct. exact H_reduct. exact H_WF. }
 
-(*H18 = ~so' a a*)
-assert ( forall a : Effect, A' a -> ~ so' a a). rewrite <- H24. rewrite <- H22.  
-assert ({Θ|-Ex,< s0, i0, op0 >  ~r~> Ex', η} -> ((forall a:Effect, Ex'-A a -> ~ Ex'-so a a))). apply So'_Acyclicity.
-apply FW;auto. intuition. 
+         
+  Case "----------------Proof of WF2".
+        {unfold WF2. rewrite H_Exec'. intros a b G1 G2 G3. rewrite  H_EX'A in G1; rewrite  H_EX'A in G2.
+         rewrite H_EX'sameobj.
+         specialize (H_sameobj' a b). apply H_sameobj'.
+         exact G1. exact G2. }
 
-(*H19 = ~((vis' a b)/\(so' b a)) *)
-assert (forall (a b:Effect), A' a -> A' b -> ~((vis' a b)/\(so' b a))). 
-intuition. apply H17 in H41. apply H20 in H42. intuition.
-    (*Based on definitions of vis' and so', there are 6 subgoals to prove*)  
-    (*Case 1*) apply Freshness in H. rewrite H44 in H41. auto.
-    (*Case 2*) rewrite H44 in H41. apply Freshness in H. auto.
-    (*Case 3*) rewrite H43 in H40. specialize (H28 Θ Ex Ex' < s0, i0, op0 >  η r). intuition. specialize (H42 a). rewrite H27 in H42. intuition.
-    (*Case 4*) specialize (H29 Ex b η' η). rewrite H27 in H29. intuition. rewrite H13 in H42. rewrite H31 in H42. intuition. 
-                      rewrite <- H45 in H29. 
-                      assert  (forall a : Effect,((Ex)-A a -> (Ex) -hb a a -> False)). intuition. specialize (H8 a).  specialize (H42 a). 
-                      rewrite <- H25 in H40.  intuition. specialize (H42 a b). rewrite H26 in H42. rewrite H27 in H42. intuition.
-    (*Case 5*) specialize ( H30 Ex b a). rewrite H27 in H30. rewrite <- H41 in H31. assert (so b a). rewrite H31 in H30.
-                      rewrite <- H45 in H13. intuition. 
-                      assert  (forall a : Effect,((Ex)-A a -> (Ex) -hb a a -> False)). intuition. specialize (H8 a). specialize (H46 a).
-                      rewrite <- H25 in H40. intuition.  specialize (H46 a b). rewrite H26 in H46. rewrite H27 in H46. intuition.
-    (*case 6*)
-                      assert  (forall a : Effect,((Ex)-A a -> (Ex) -hb a a -> False)). intuition. specialize (H8 a). specialize (H42 a).
-                      rewrite <- H25 in H40. intuition.  specialize (H42 a b). rewrite H26 in H42. rewrite H27 in H42. intuition.
+  Case "----------------Proof of WF3 ".
+        { unfold  WF3. intros  a b c. rewrite H_Exec'; rewrite H_EX'so. intro G1. destruct G1.
+          specialize (H_soTrans Ex' a b c). rewrite H_EX'so in H_soTrans.
+          apply H_soTrans. exact H. exact H0. }
 
-(*Now, use PaperH8III to show these 3 statements are equal to acyclicity of hb'*)
-assert ( forall (Ex:Exec), 
-                                      (forall (a:Effect), Ex-A a -> ~ Ex-vis a a) ->
-                                      (forall (a:Effect), Ex-A a -> ~ Ex-so  a a) ->
-                                      (forall (a b:Effect),Ex-A a -> Ex-A b ->  ~((Ex-vis a b)/\ (Ex-so b a))) ->
-                                                                                                                              (forall (a:Effect),~(Ex-hb a a))).
-apply  PaperH8III . specialize (H39 Ex'). rewrite H23 in H39.  rewrite H24 in H39. rewrite H22 in H39. intuition. 
-unfold WF1. rewrite  H18. intuition. specialize (H40 a). intuition.
+  Case "----------------Proof of WF4 ".
+        { unfold WF4. intro a. rewrite H_Exec'; rewrite H_EX'A; rewrite H_EX'sameobj.
+          specialize (H_sameobj' a a).
+          intro G. apply H_sameobj'. exact G. exact G. }
 
-(*----------------------------------------------------------------------proof of WF2  *)
- inversion H. unfold WF2. intuition. assert ((E A' vis' so' sameobj') -sameobj = sameobj'). intuition.
-rewrite H55. specialize (H45 a b). intuition.
+  Case "----------------Proof of WF5 ".
+        { unfold WF5. intros a b. rewrite H_Exec'; rewrite H_EX'A; rewrite H_EX'sameobj.
+          intros G1 G2 G3. specialize (H_sameobj' b a).
+          apply H_sameobj' in G2. exact G2. exact G1. }
 
-(*----------------------------------------------------------------------proof of WF3  *)
-unfold WF3. intuition. rewrite H18 in H37. rewrite H18 in H38. rewrite  H24 in H38. rewrite H24 in H37. apply H20 in H38.
-apply H20 in H37. rewrite H18. rewrite H24. apply H20.  intuition.
-    (*5 new subgoals, based on definition of so'*)
-    (*Case 1*) assert (so a c). intuition. rewrite H39 in H35. specialize (H29 Ex a η' η). rewrite  H27 in H29. intuition.
-                     rewrite H13 in H37. rewrite H31 in H37. intuition. unfold WF3 in H2. specialize (H2 a η c). rewrite H27 in H2. intuition.
-    (*Case 2*) intuition.
-    (*Case 3*) specialize (H30 Ex a b). rewrite H39 in H30. rewrite H38 in H30.  rewrite H13 in H30. rewrite H31 in H30. intuition.
-                     rewrite <- H38 in H37. rewrite <- H39 in H37. unfold WF3 in H2. specialize (H2 a b c). rewrite H27 in H2. rewrite H27 in H37.
-                     intuition.
-    (*Case 4*) unfold WF3 in H2. specialize (H2 a b η'). rewrite H27 in H2. intuition. rewrite H37 in H35. specialize(H30  Ex η' η).
-                     rewrite H27 in H30. rewrite H13 in H30. intuition.
-    (*Case 5*) unfold WF3 in H2. specialize (H2  a b c). rewrite H27 in H2. intuition.
-
-(*----------------------------------------------------------------------proof of WF4  *)
-unfold WF4. intuition. rewrite H18 in H35. rewrite H22 in H35. assert ((E A' vis' so' sameobj') -sameobj  = sameobj'). intuition.  
-rewrite H37. specialize (H21 a a). intuition.
-
-(*----------------------------------------------------------------------proof of WF5  *)
-unfold WF5. intuition. rewrite H18 in H35. rewrite H22 in H35. assert ((E A' vis' so' sameobj') -sameobj = sameobj'). intuition. 
-rewrite H39. specialize (H21 b a). intuition. 
-
-(*----------------------------------------------------------------------proof of WF6  *)
-unfold WF6. intuition. rewrite H18 in H35. rewrite H22 in H35. assert ((E A' vis' so' sameobj') -sameobj = sameobj'). intuition.
-rewrite H39.  specialize (H21 a c). intuition. 
-
+  Case "----------------Proof of WF6 ".
+        { unfold WF6. intros a b c. rewrite H_Exec'; rewrite H_EX'A; rewrite H_EX'sameobj.
+          intros G1 G2 G3 G4. specialize (H_sameobj' a c).
+          apply H_sameobj' in G1. exact G1. exact G3. }   
 Qed.
 
  
