@@ -1,4 +1,3 @@
-Add LoadPath "/Users/Kiarash/Desktop/Quelea Coq/Test_PG".
 Require Import List.
 Require Import Coq.Sets.Constructive_sets.
 Require Import Coq.Arith.EqNat.
@@ -19,26 +18,52 @@ Infix "∪" := Rel_Union (at level 0).
 
 (*Well-Formedness of an Execution*)
 Parameter WF : Exec->Prop.
-(*Well-Formedness of an Execution is equal to *)
-Definition WF1 (Ex:Exec):Prop := forall (a:Effect), (Ex-A a) ->  ~(Ex-hb a a).
-Definition WF2 (Ex:Exec) :=forall (a b : Effect), (Ex-A a) -> (Ex-A b) -> (Ex-vis a b)-> (Ex-sameobj a b).
+(*Well-Formedness of an Execution is equal to: *)
+Definition WF1 (Ex:Exec) :  Prop := forall (a:Effect), (Ex-A a) ->  ~(Ex-hb a a).
+Definition WF2 (Ex:Exec) := forall (a b : Effect), (Ex-A a) -> (Ex-A b) -> (Ex-vis a b)-> (Ex-sameobj a b).
 Definition WF3 (Ex:Exec) := forall (a b c: Effect), (Ex-so a b)/\(Ex-so b c) -> (Ex-so a c ).
 Definition WF4 (Ex:Exec) := forall (a:Effect), (Ex-A a) -> (Ex-sameobj a a).
 Definition WF5 (Ex:Exec) := forall (a b : Effect),(Ex-A a) -> (Ex-A b) ->   (Ex-sameobj a b)-> (Ex-sameobj b a).
-Definition WF6 (Ex:Exec) :=forall  (a b c: Effect), (Ex-A a) -> (Ex-A b) ->(Ex-A c) -> (Ex-sameobj a b)/\(Ex-sameobj b c) -> (Ex-sameobj a c ).
+Definition WF6 (Ex:Exec) := forall (a b c: Effect), (Ex-A a) -> (Ex-A b) ->(Ex-A c) -> (Ex-sameobj a b)/\(Ex-sameobj b c) -> (Ex-sameobj a c ).
+
 (*Definition6 of Paper: Causually Consistent Stores*)
 Definition CausCons (Θ:Store)(Ex:Exec):= 
-                                        forall (r: ReplID) (a η:Effect) (A: Exec_A) (vis so sameobj : Relation), 
-                                                                                            ((Θ r) η) -> (Ex= (E A vis so sameobj)-> A a -> (((hbo Ex) a η)-> ((Θ r) a))). 
+                                        forall(r: ReplID)(a η:Effect), ((Θ r) η) -> (Ex-A a) -> ((Ex-hbo) a η) -> ((Θ r) a). 
+
+Definition StoreCons (τ:ConsCls)(Ex:Exec)(η':Effect):=
+  match τ with
+    |ec => forall(a b:Effect), (Ex-hbo a b)/\(Ex-vis b η') -> (Ex-vis a η') 
+    |cc => forall(a:Effect),   (Ex-hbo a η')              -> (Ex-vis a η')
+    |sc => forall(a:Effect),   (Ex-sameobj a η')          -> (Ex-vis a η')\/(Ex-vis η' a)\/(a=η') 
+  end.
 
 
-(*****************AXIOMS******************)
+Definition Model (Ex:Exec)(τ:ConsCls) := forall(η:Effect), (Ex-A η)-> StoreCons τ Ex η.  
+
+Variable A':Exec_A.
+Variable vis' so' same':Relation.
+Definition Ex := (E A' vis' so' same').
+
+
+Infix "|=Ψ" := Model (at level 10). 
+
+
+Eval compute in  Ex |=Ψ cc.
+
+
+
+
+
+
+
+(*------------------------------------------------------------------------------------------------------------------------*)
+(******************AXIOMS******************)
 Axiom FW: forall (Ex:Exec), (WF1 Ex) ->(WF2 Ex) ->(WF3 Ex) ->(WF4 Ex) ->(WF5 Ex) ->(WF6 Ex) ->(WF Ex). (*WF1 to WF6 result WF*)
 Axiom WFhelp: forall (Ex:Exec), (WF Ex)->(WF1 Ex)/\(WF2 Ex)/\(WF3 Ex)/\(WF4 Ex)/\(WF5 Ex)/\(WF6 Ex). (*and vice versa*)
 
 Axiom Freshness: forall  (Θ:Store)(ex1 ex2:Exec) (opk:op_key) (eff:Effect) (r:ReplID),  (*new effect in reductions is fresh*)
                                                                                                 {Θ|-ex1, opk ~r~> ex2, eff} -> ~ (Θ r) eff.
-
+    
 (*Trivial Axioms*)
 Axiom SessionOrder : forall (Ex:Exec)(eff eff':Effect), Ex-so eff eff' -> ((eff.(sess) = eff'.(sess))/\ (  (eff.(seq))+1 <= (eff'.(seq)) )).
 Axiom Why_Coq : forall i:SeqNo, i=i-1 -> False.

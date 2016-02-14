@@ -4,7 +4,6 @@ Require Import Coq.Arith.EqNat.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Arith.Compare_dec.
-Add LoadPath "/Users/Kiarash/Desktop/Quelea Coq/Test_PG".
 Require Import parametes_coq.
 Require Import config_coq.
 Require Import oper_semantic_coq.
@@ -101,7 +100,7 @@ Proof.
   rename H10 into H_so';rename H11 into H_sameobj';rename H6 into H_Exec; rename H8 into H_Exec'.
 
 
-  (************************************************************Assertions that will be needed*)
+  (*************************************************Assertions that will be needed*)
   
   (*Trivial assertions*)
   assert ((Ex')-A = A')    as H_EX'A.      rewrite <- H_Exec'; auto.
