@@ -62,7 +62,7 @@ Axiom FW: forall (Ex:Exec), (WF1 Ex) ->(WF2 Ex) ->(WF3 Ex) ->(WF4 Ex) ->(WF5 Ex)
 Axiom WFhelp: forall (Ex:Exec), (WF Ex)->(WF1 Ex)/\(WF2 Ex)/\(WF3 Ex)/\(WF4 Ex)/\(WF5 Ex)/\(WF6 Ex). (*and vice versa*)
 
 Axiom Freshness: forall  (Θ:Store)(ex1 ex2:Exec) (opk:op_key) (eff:Effect) (r:ReplID),  (*new effect in reductions is fresh*)
-                                                                                                {Θ|-ex1, opk ~r~> ex2, eff} -> ~ (Θ r) eff.
+                                                                                                [Θ|-ex1, opk ~r~> ex2, eff] -> ~ (Θ r) eff.
     
 (*Trivial Axioms*)
 Axiom SessionOrder : forall (Ex:Exec)(eff eff':Effect), Ex-so eff eff' -> ((eff.(sess) = eff'.(sess))/\ (  (eff.(seq))+1 <= (eff'.(seq)) )).
@@ -74,7 +74,7 @@ Axiom natSeq: forall ss:SeqNo, ~(ss+1 <= (ss-1)).
 
 (*The new produced effect does not precede existing effects *)
 Axiom  SO_NewEff: forall (Θ: Store)(Ex Ex':Exec) (opk:op_key)(η:Effect)(r:ReplID),
-                                          {Θ|-Ex, opk ~r~> Ex', η} -> (forall a:Effect, Θ r a -> ~ Ex-so η a).
+                                          [Θ|-Ex, opk ~r~> Ex', η] -> (forall a:Effect, Θ r a -> ~ Ex-so η a).
 
 (*So holds if an effects precedes another*)
 Axiom  SO_Seq : forall (Ex:Exec)(a b c:Effect), Ex-so a b -> seq b = seq c - 1 -> Ex-so a c.

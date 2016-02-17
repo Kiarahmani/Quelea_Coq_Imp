@@ -62,7 +62,7 @@ Notation " '<' s , i , op '>' " := (op_key_cons s i op) (at level 0, op at level
 (********************************************************************************************************************************)
 (*************************************************Auxiliary Reduction [OPER]************************************************)
 
-Reserved Notation "'{'  Θ '|-' A , C '~' r '~>' B , n '}'" (at level 80,Θ at level 10).
+Reserved Notation "'['  Θ '|-' A , C '~' r '~>' B , n ']'" (at level 80,Θ at level 10).
 Inductive Aux_Reduct (Θ:Store) (r: ReplID) : Exec -> op_key -> Exec -> Effect -> Prop :=
 OPER :  forall   (A A': Exec_A) (v: Value) 
                                 (vis so sameobj vis' so' sameobj' : Relation) 
@@ -76,8 +76,8 @@ OPER :  forall   (A A': Exec_A) (v: Value)
               (forall (eff eff':Effect), (so' eff eff') <-> ((((so eff η') \/ (eff=η'))/\(eff'=η)) \/ (so eff eff'))) ->
               (forall eff eff', A' eff-> A' eff'-> (sameobj' eff eff')) 
 
-                                                 ->{ Θ |- (E A vis so sameobj), <s,i,op>   ~r~>  (E A' vis' so' sameobj') ,η}
-where "'{' Θ |- A , C '~' r '~>' B , n '}'" := (Aux_Reduct Θ r A C B n).
+                                                 ->[ Θ |- (E A vis so sameobj), <s,i,op>   ~r~>  (E A' vis' so' sameobj') ,η]
+where "'[' Θ |- A , C '~' r '~>' B , n ']'" := (Aux_Reduct Θ r A C B n).
 
 
 
@@ -88,7 +88,7 @@ where "'{' Θ |- A , C '~' r '~>' B , n '}'" := (Aux_Reduct Θ r A C B n).
 (*********************************************************************************************)
 
 Variable Error_opcls:op_cls. (*Default return value if the session is empty *)
-Reserved Notation "'{{' A , B , C '--' n '-->' A' , B' , C' '}}'" (at level 0, n at level 200).
+Reserved Notation "'[[' A , B , C '--' n '-->' A' , B' , C' ']]'" (at level 0, n at level 200).
 Inductive Progress (η:Effect) :  Exec->Store->SessSoup ->Exec -> Store -> SessSoup ->Prop :=     
 
 |EFFVIS: forall (Σ: SessSoup) ( Θ Θ' :Store) (Ex:Exec) (r:ReplID),
@@ -96,13 +96,13 @@ Inductive Progress (η:Effect) :  Exec->Store->SessSoup ->Exec -> Store -> SessS
                                                                       (Included Effect (Union Effect (rtrn_invs Ex-vis η) (rtrn_invs Ex-so η)) (Θ r))->
                                                                       (Ex-A η)->
                                                                        ~((Θ r)η)                                                                          
-                                                                                ->{{Ex,Θ,Σ --η-->  Ex ,Θ' ,Σ }}
+                                                                                ->[[Ex,Θ,Σ --η-->  Ex ,Θ' ,Σ ]]
 
 
 |EC: forall (τ:ConsCls) (Θ:Store)(Σ: SessSoup)(Ex Ex':Exec)(ss:SessID)(ii:SeqNo) 
                              (opp:OperName)(r:ReplID)(ing1 ing2:Soup_Ing) (oplist:session), 
                                                                                   (τ=ec)->
-                                                                                  {Θ |- Ex, <ss,ii,opp> ~r~> Ex', η} ->
+                                                                                  [Θ |- Ex, <ss,ii,opp> ~r~> Ex', η] ->
                                                                                   (ing1.(s)=ss) ->
                                                                                   (ing2.(s)=ss) ->
                                                                                   (ing1.(i)=ii) ->
@@ -110,29 +110,28 @@ Inductive Progress (η:Effect) :  Exec->Store->SessSoup ->Exec -> Store -> SessS
                                                                                   (ing2.(σ)= tail oplist) ->
                                                                                   (ing1.(σ)=oplist)->
                                                                                   (hd Error_opcls oplist=Build_op_cls opp τ)
-                                                                                                                   ->{{Ex,Θ,Σ+soup+ing1 --η-->  Ex' ,Θ ,Σ+soup+ing2 }}                   
+                                                                                                                   ->[[Ex,Θ,Σ+soup+ing1 --η-->  Ex' ,Θ ,Σ+soup+ing2 ]]                   
 
 
 |CC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ:Store)(Σ: SessSoup)(ing1 ing2:Soup_Ing)(r:ReplID)
                          (ss:SessID)(ii:SeqNo)(opp:OperName),  
                                                                                 (τ=cc)->
                                                                                 (Included Effect (rtrn_invs Ex'-so η) (Θ r))->
-                                                                                ({ Θ |- Ex, <ss,ii,opp> ~r~> Ex', η})
-                                                                                                    ->{{Ex,Θ,Σ+soup+ing1 --η-->  Ex' ,Θ ,Σ+soup+ing2 }}
+                                                                                ([ Θ |- Ex, <ss,ii,opp> ~r~> Ex', η])
+                                                                                                    ->[[Ex,Θ,Σ+soup+ing1 --η-->  Ex' ,Θ ,Σ+soup+ing2 ]]
 
 
 |SC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ Θ':Store)(Σ: SessSoup)(ing1 ing2:Soup_Ing)(r:ReplID)
                           (ss:SessID)(ii:SeqNo)(opp:OperName),  
                                                                                  (τ=sc)->
-                                                                                 ({Θ|-Ex, <ss,ii,opp> ~r~> Ex', η})->
+                                                                                 ([Θ|-Ex, <ss,ii,opp> ~r~> Ex', η])->
                                                                                  (Included Effect (Ex-A)(Θ r))->
                                                                                  (Included ReplID (dom Θ) (dom Θ') /\ Included ReplID (dom Θ') (dom Θ)) ->
                                                                                  forall r':ReplID, ((dom Θ') r') ->  
                                                                                                 (Set_Equi Effect (Θ' r') (Union Effect (Θ r')  (Singleton Effect η)))
-                                                                                                                           ->{{Ex,Θ,Σ+soup+ing1 --η-->  Ex' ,Θ' ,Σ+soup+ing2 }}
+                                                                                                                           ->[[Ex,Θ,Σ+soup+ing1 --η-->  Ex' ,Θ' ,Σ+soup+ing2 ]]
 
-where " '{{'  E , Θ , Σ  '--' η '-->'  F , T ,  S '}}' " := (Progress η E Θ Σ F T S).
-
+where " '[['  E , Θ , Σ  '--' η '-->'  F , T ,  S ']]' " := (Progress η E Θ Σ F T S).
 
 
 

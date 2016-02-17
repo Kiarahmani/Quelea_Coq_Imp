@@ -39,7 +39,7 @@ Qed.
 (*********************************************************************************************************)
 
 Lemma Vis'_Acyclicity :  forall (Θ: Store)(Ex Ex':Exec) (opk:op_key)(η:Effect)(r:ReplID),
-                                      WF Ex -> {Θ|-Ex, opk ~r~> Ex', η} -> ((forall a:Effect, Ex'-A a -> ~ Ex'-vis a a)).
+                                      WF Ex -> [Θ|-Ex, opk ~r~> Ex', η] -> ((forall a:Effect, Ex'-A a -> ~ Ex'-vis a a)).
 Proof.
     intros Θ Ex Ex' key η r; intros WF_H reduct_H. 
     apply WellFormed_res1 in WF_H. inversion WF_H; clear H0  WF_H.
@@ -58,7 +58,7 @@ Qed.
 (*Lemma: if Ex is well fromed and reduces to Ex' ===> Ex'.so  is acyclic*)
 (*********************************************************************************************************)
 Lemma So'_Acyclicity :  forall (Θ: Store)(Ex Ex':Exec) (opk:op_key)(η:Effect)(r:ReplID),
-                                     WF Ex ->  {Θ|-Ex, opk ~r~> Ex', η} -> ((forall a:Effect, Ex'-A a -> ~ Ex'-so a a)). 
+                                     WF Ex ->  [Θ|-Ex, opk ~r~> Ex', η] -> ((forall a:Effect, Ex'-A a -> ~ Ex'-so a a)). 
 Proof. 
     intros Θ Ex Ex' key η r; intros WF_H reduct_H. 
     apply WellFormed_res1 in WF_H. inversion WF_H; inversion H0; clear H0 H H2  WF_H.
@@ -91,7 +91,7 @@ Qed.
 (*Lemma: if Ex is well fromed and reduces to Ex' ===> Ex'.hb  is acyclic*)
 (*********************************************************************************************************)
 Lemma hb'_Acyclicity: forall (Θ: Store)(Ex Ex':Exec) (s:SessID) (i:SeqNo)(op:OperName)(η:Effect)(r:ReplID),
-                                       {Θ|-Ex, <s,i,op> ~r~> Ex', η} -> (WF Ex) ->  (WF1 Ex').
+                                       [Θ|-Ex, <s,i,op> ~r~> Ex', η] -> (WF Ex) ->  (WF1 Ex').
 Proof.
   intros Θ Ex Ex' s i op η r. intros H_reduct H_WF.
   (*Inversion on the reduction*)
@@ -119,7 +119,7 @@ Proof.
 
   (*Assert that the newly produced effect η, does not preceed other effects. Proof by an axiom *)
   assert ( forall (Θ: Store)(Ex Ex':Exec) (opk:op_key)(η:Effect)(r:ReplID),
-                      {Θ|-Ex, opk ~r~> Ex', η} -> (forall e:Effect, Θ r e -> ~ Ex-so η e)) as H_newEff. apply SO_NewEff. 
+                      [Θ|-Ex, opk ~r~> Ex', η] -> (forall e:Effect, Θ r e -> ~ Ex-so η e)) as H_newEff. apply SO_NewEff. 
 
   (*Assert if b is before c, and if (so a b), then (so a c)*)
   assert (forall (Ex:Exec)(a b c:Effect), (Ex-so a b)->(seq b)=(seq c)-1 ->(Ex-so a c)) as H_soRefl. apply SO_Seq.
@@ -138,7 +138,7 @@ Proof.
   assert (forall a:Effect, A' a -> ~ vis' a a) as H_EqualI.
   Case "Acyclicity of vis'". {
             rewrite <- H_EX'A; rewrite<-H_EX'vis.
-            assert ({Θ|-Ex,< s, i, op >  ~r~> Ex', η} -> ((forall a:Effect, Ex'-A a -> ~ Ex'-vis a a))).
+            assert ([Θ|-Ex,< s, i, op >  ~r~> Ex', η] -> ((forall a:Effect, Ex'-A a -> ~ Ex'-vis a a))).
             apply Vis'_Acyclicity. exact H_WF.
             apply H. exact H_reduct. }
 
@@ -146,7 +146,7 @@ Proof.
   assert ( forall a : Effect, A' a -> ~ so' a a) as H_EqualII.
   Case "Acyclicity of so'". {
             rewrite <- H_EX'A. rewrite <- H_EX'so.
-            assert ({Θ|-Ex,< s, i, op >  ~r~> Ex', η} -> ((forall a:Effect, Ex'-A a -> ~ Ex'-so a a))).
+            assert ([Θ|-Ex,< s, i, op >  ~r~> Ex', η] -> ((forall a:Effect, Ex'-A a -> ~ Ex'-so a a))).
             apply So'_Acyclicity; exact H_WF.
             apply H. exact H_reduct. }
 

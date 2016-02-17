@@ -17,7 +17,7 @@ Import Operational_Semantics.
 (**************************************************************************************************)
 (*************************************** Lemma 5 of the Paper *************************************)
 Theorem Lemma5: forall (Θ: Store)(Ex Ex':Exec) (s:SessID) (i:SeqNo)(op:OperName)(η:Effect)(r:ReplID),
-                                       {Θ|-Ex, <s,i,op> ~r~> Ex', η} -> (WF Ex) -> (WF Ex').
+                                       [Θ|-Ex, <s,i,op> ~r~> Ex', η] -> (WF Ex) -> (WF Ex').
 
 Proof.
   
