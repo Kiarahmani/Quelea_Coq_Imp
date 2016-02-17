@@ -7,28 +7,15 @@ Require Import Coq.Arith.Compare_dec.
 Require Import parametes_coq.
 Require Import config_coq.
 Require Import oper_semantic_coq.
+Require Import Coq.Strings.String.
 Import Config.
 Import parameters.
 Import Operational_Semantics.
+Require Import contract_defintion.
+Require Import contract_Eval.
 
 
-
-
-Module Type ATOM.
-
-  Parameter atom : Set.
-  Parameter eq_atom_dec : forall x y : atom, {x = y} + {x <> y}.
-
-End ATOM.
-
-
-
-
-
-Definition EffVar := Variable String.
-
-
-Inductive EffVar : Type := |EffVar_x |EffVar_y |EffVar_η. 
+Parameter var_equal : forall x y : EffVar, {x = y} + {x <> y}.
 
 Fixpoint Prop_Evaluation (pr:contract_Prop)(Ex:Exec) : Eval_result :=
   match pr with
@@ -42,42 +29,21 @@ Fixpoint Prop_Evaluation (pr:contract_Prop)(Ex:Exec) : Eval_result :=
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Inductive contract_Contract : Type :=
-|contract_free_cons: contract_Prop -> contract_Contract
-|contract_untyped_cons: Effect -> contract_Contract -> contract_Contract
-|contract_typed_cons: Effect -> contract_EffType -> contract_Contract -> contract_Contract.
-
-
-
-
-
-
-
-
-
-
-
+Fixpoint Prop_Subst (pr:contract_Prop)(eff:Effect)(v:EffVar) : contract_Prop :=
+  match pr with
+    |contract_prop_true => contract_prop_true
+    |contract_prop_effeff R1 e1 e2 => contract_prop_effeff R1 e1 e2
+    |contract_prop_effvar R1 e1 v1 => if (var_equal v v1) then contract_prop_effeff R1 e1 eff else contract_prop_effvar R1 e1 v1
+    |contract_prop_vareff R1 v1 e1 => if (var_equal v v1) then contract_prop_effeff R1 eff e1 else contract_prop_vareff R1 v1 e1
+    |contract_prop_varvar R1 v1 v2 => if (var_equal v v1)
+                                     then (if (var_equal v v2) then contract_prop_effeff R1 eff eff
+                                                               else contract_prop_effvar R1 eff v2)
+                                     else (if (var_equal v v2) then contract_prop_vareff R1 v1 eff
+                                           else contract_prop_varvar R1 v1 v2)
+    |contract_prop_disjunction p1 p2 => contract_prop_disjunction (Prop_Subst p1 eff v) (Prop_Subst p2 eff v)
+    |contract_prop_conjunction p1 p2 => contract_prop_conjunctieson (Prop_Subst p1 eff v) (Prop_Subst p2 eff v)
+    |contract_prop_implication p1 p2 => contract_prop_implication (Prop_Subst p1 eff v) (Prop_Subst p2 eff v)                             
+  end.
 
 
 Fixpoint contract_Evaluation (cont: contract_Contract) (Ex:Exec) :Prop :=
@@ -90,19 +56,3 @@ Fixpoint contract_Evaluation (cont: contract_Contract) (Ex:Exec) :Prop :=
 
 
 
-
-
-
-Theorem trans_test : forall (R1:Relation)(a b c d: Effect), R1 a b -> R1 b c -> R1 c d -> (my_trans R1) a d.
-Proof.
-  intros R a b c d.
-  intros H1 H2. 
-  assert ((my_trans R) a c).
-  apply (my_base R) in H2.
-  apply (my_base R) in H1.
-  apply (my_step R a b c ) in H1.
-  exact H1. exact H2.
-  intro H3.
-  apply (my_base R) in H3.
-  apply (my_step R a c d). exact H. exact H3.
-Qed.
