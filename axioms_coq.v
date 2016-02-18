@@ -26,34 +26,6 @@ Definition WF4 (Ex:Exec) := forall (a:Effect), (Ex-A a) -> (Ex-sameobj a a).
 Definition WF5 (Ex:Exec) := forall (a b : Effect),(Ex-A a) -> (Ex-A b) ->   (Ex-sameobj a b)-> (Ex-sameobj b a).
 Definition WF6 (Ex:Exec) := forall (a b c: Effect), (Ex-A a) -> (Ex-A b) ->(Ex-A c) -> (Ex-sameobj a b)/\(Ex-sameobj b c) -> (Ex-sameobj a c ).
 
-(*Definition6 of Paper: Causually Consistent Stores*)
-Definition CausCons (Θ:Store)(Ex:Exec):= 
-                                        forall(r: ReplID)(a η:Effect), ((Θ r) η) -> (Ex-A a) -> ((Ex-hbo) a η) -> ((Θ r) a). 
-
-Definition StoreCons (τ:ConsCls)(Ex:Exec)(η':Effect):=
-  match τ with
-    |ec => forall(a b:Effect), (Ex-hbo a b)/\(Ex-vis b η') -> (Ex-vis a η') 
-    |cc => forall(a:Effect),   (Ex-hbo a η')              -> (Ex-vis a η')
-    |sc => forall(a:Effect),   (Ex-sameobj a η')          -> (Ex-vis a η')\/(Ex-vis η' a)\/(a=η') 
-  end.
-
-
-Definition Model (Ex:Exec)(τ:ConsCls) := forall(η:Effect), (Ex-A η)-> StoreCons τ Ex η.  
-
-Variable A':Exec_A.
-Variable vis' so' same':Relation.
-Definition Ex := (E A' vis' so' same').
-
-
-Infix "|=Ψ" := Model (at level 10). 
-
-
-Eval compute in  Ex |=Ψ cc.
-
-
-
-
-
 
 
 (*------------------------------------------------------------------------------------------------------------------------*)

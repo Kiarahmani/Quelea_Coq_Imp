@@ -49,7 +49,8 @@ Inductive contract_Prop : Type :=
 
 Inductive contract_Contract : Type :=
 |contract_free_cons: contract_Prop -> contract_Contract
-|contract_typed_cons: Effect -> contract_EffType -> contract_Contract -> contract_Contract.
+|contract_untyped_cons: EffVar->contract_Contract -> contract_Contract
+|contract_typed_cons: EffVar -> contract_EffType -> contract_Contract -> contract_Contract.
 
 
 
