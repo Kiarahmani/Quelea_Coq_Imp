@@ -10,6 +10,9 @@ Require Import config_coq.
 Require Import oper_semantic_coq.
 Require Import axioms_coq.
 Require Import theorems_coq.
+Require Import contract_definition.
+Require Import contract_Eval.
+Require Import contract_subs.
 Import Config.
 Import parameters.
 Import Operational_Semantics.

@@ -10,7 +10,10 @@ Require Import oper_semantic_coq.
 Import Config.
 Import parameters.
 Import Operational_Semantics.
-Require Import contract_defintion.
+Require Import contract_definition.
+Require Import Coq.Strings.String.
+Require Import contract_subs.
+Parameter Eff_name : Effect -> string.
 
 
 Fixpoint relation_Evaluation (rel : contract_Relation) (Ex:Exec) : Relation :=
@@ -53,4 +56,48 @@ Definition Imp_result (e1 e2: Eval_result): Eval_result:=
     |(error,_) => error
     |(result X1,result X2) => result (X1->X2)
   end.
+
+
+
+Fixpoint Prop_Evaluation (pr:contract_Prop)(Ex:Exec) : Prop:=
+  match pr with
+    |contract_prop_true => True
+    |contract_prop_effeff R1 α β      => (relation_Evaluation R1 Ex) α β
+    |contract_prop_conjunction p1 p2  =>  (Prop_Evaluation p1 Ex) /\ (Prop_Evaluation p2 Ex)
+    |contract_prop_disjunction p1 p2  =>  (Prop_Evaluation p1 Ex) \/  (Prop_Evaluation p2 Ex)
+    |contract_prop_implication p1 p2  =>  (Prop_Evaluation p1 Ex) ->  (Prop_Evaluation p2 Ex)
+    |_=> False                                                           
+  end.
+
+Fixpoint contract_Eval (cont: contract_Contract) (Ex:Exec) (n:nat):Prop :=
+  match n with
+    |O => match cont with
+           |contract_free_cons π => Prop_Evaluation π Ex
+           |_=> False
+         end
+           
+    |S n' => match cont with
+              |contract_typed_cons e τ ψ =>  forall e:Effect,(Ex-A e)-> contract_Eval (contract_Subst ψ e (effvar (Eff_name e))) Ex n'
+              |_=>False
+            end
+  end.
+
+                       
+           
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
