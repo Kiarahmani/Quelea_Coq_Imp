@@ -14,11 +14,11 @@ Require Import contract_definition.
 Require Import Coq.Strings.String.
 Require Import contract_subs.
 Parameter Eff_name : Effect -> string.
-Variable η_hat : EffVar.
-
-
+Parameter Eff_Equi : Effect -> Effect -> Prop.
+Variable η'':EffVar.
 Fixpoint relation_Evaluation (rel : contract_Relation) (Ex:Exec) : Relation :=
   match rel with
+    |contract_equi => Eff_Equi
     |contract_vis   => Ex-vis
     |contract_so => Ex-so
     |contract_sameobj => Ex-sameobj
@@ -73,7 +73,7 @@ Fixpoint Prop_Evaluation (pr:contract_Prop)(Ex:Exec) : Prop:=
 Fixpoint contract_Eval (cont: contract_Contract) (Ex:Exec) (eff : Effect) (n:nat):Prop :=
   match n with
     |O => match cont with
-           |contract_free_cons π => Prop_Evaluation (Prop_Subst π eff η_hat) Ex
+           |contract_free_cons π => Prop_Evaluation (Prop_Subst π eff η'') Ex
            |_=> False
          end
            

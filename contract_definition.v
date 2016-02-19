@@ -21,12 +21,23 @@ Inductive contract_EffType : Type :=
 |contract_efftype_disjunction: contract_EffType -> contract_EffType -> contract_EffType.
 
 Inductive contract_Relation : Type :=
+|contract_equi: contract_Relation
 |contract_vis: contract_Relation
 |contract_so: contract_Relation
 |contract_sameobj: contract_Relation
 |contract_relation_union: contract_Relation -> contract_Relation -> contract_Relation
 |contract_relation_intersect: contract_Relation -> contract_Relation -> contract_Relation
 |contract_relation_closure: contract_Relation -> contract_Relation.
+
+Definition Soo : contract_Relation :=
+  contract_relation_intersect contract_so contract_sameobj.
+
+Definition Hb : contract_Relation :=
+  contract_relation_closure (contract_relation_union contract_so contract_vis).
+
+Definition Hbo:contract_Relation :=
+  contract_relation_closure(contract_relation_union Soo contract_vis).
+
 
 Inductive my_trans (R1:Relation): Relation :=
 |my_base (e1 e2:Effect) : R1 e1 e2 -> my_trans R1 e1 e2
