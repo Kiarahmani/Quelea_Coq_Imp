@@ -13,11 +13,35 @@ Require Import theorems_coq.
 Require Import contract_definition.
 Require Import contract_subs.
 Require Import contract_Eval.
+Require Import lemma5.
 Import Config.
 Import parameters.
 Import Operational_Semantics.
 
 Variable m n:EffVar.
+Infix " '#-->' " := contract_prop_implication (at level 80).
+Infix " '#\/#' " := contract_prop_disjunction (at level 70).
+Infix " '#/\#' " := contract_prop_conjunction (at level 60).
+Notation " 'Sameobj' " := contract_sameobj.
+Notation " 'Vis' " := contract_vis.
+Notation " 'Equi' " := contract_equi.
+Notation " 'PROP:'  ":= contract_prop_varvar (at level 90).
+Notation " 'CONTR:'  ":=contract_free_cons (at level 95).
+Notation " 'ALL'  ":=(contract_untyped_cons) (at level 96).
+
+Definition Store_Contr (τ:ConsCls):contract_Contract:=
+  match τ with
+    |sc =>ALL  m (CONTR: ((PROP: Sameobj m η'') #-->
+                                         ((PROP: Vis m η'') #\/#
+                                          (PROP: Vis η'' m) #\/#
+                                          (PROP: Equi m η''))))
+    |cc => ALL m (CONTR: ((PROP: Sameobj m η'') #--> (PROP: Vis m η'')))
+    |ec => ALL m (ALL n (CONTR: ((PROP: Hbo m n) #/\# (PROP: Vis n η'') #--> (PROP: Vis m η''))))
+  end.
+
+Definition CausCons (Θ:Store)(Ex:Exec):= 
+                                        forall(r: ReplID)(a η:Effect), ((Θ r) η) -> (Ex-A a) -> ((Ex-hbo) a η) -> ((Θ r) a). 
+
 
 Definition Models (Ex:Exec) (cont:contract_Contract) (eff:Effect) : Prop :=
   contract_Eval cont Ex eff (contract_free_number cont).
@@ -26,41 +50,35 @@ Notation " A '|=' B " := (Models A B) (at level 30).
 
 
 
-Definition CausCons (Θ:Store)(Ex:Exec):= 
-                                        forall(r: ReplID)(a η:Effect), ((Θ r) η) -> (Ex-A a) -> ((Ex-hbo) a η) -> ((Θ r) a). 
+Theorem theorem7 : forall  (Ex Ex':Exec)(Θ Θ':Store)(Σ: SessSoup)(τ: ConsCls)(ss:SessID)
+                      (ii:SeqNo)(σσ:session)(η:Effect)(ing1 ing2: Soup_Ing)(opτ:op_cls) (op: OperName),
+                     (WF Ex) -> (CausCons Θ Ex) ->
+                     opτ = mkop_cls op τ ->
+                     ing1 = mkSoup_Ing ss ii (opτ::σσ) ->
+                     ing2 = mkSoup_Ing ss (ii+1) σσ ->
+                     [[Ex,Θ,(Σ+soup+ing1) --η-->  Ex' ,Θ' , (Σ+soup+ing2) ]]
+                     -> WF Ex'/\ (Ex'|=Store_Contr τ) η.
 
+Proof. intros Ex Ex' θ θ' Σ τ s i σ η ing1 ing2 opτ op.
+       intros HWF HCausCons. intros HSess HIng1 HIng2 H.
+       split.
+       -Case"Proof of Well-Formedness of Ex'".
+             destruct τ. 
+             +SCase "τ=ec". inversion H.    rewrite <- H7; exact HWF.
+                            apply Lemma5 in H4. exact H4. exact HWF.
+                            apply Lemma5 in H8. exact H8. exact HWF.
+                            apply Lemma5 in H3. exact H3. exact HWF.
 
+             +SCase "τ=cc". inversion H.    rewrite <- H7; exact HWF.
+                            apply Lemma5 in H4. exact H4. exact HWF.
+                            apply Lemma5 in H8. exact H8. exact HWF.
+                            apply Lemma5 in H3. exact H3. exact HWF.
 
-Infix " '#-->' " := contract_prop_implication (at level 80).
-Infix " '#\/#' " := contract_prop_disjunction (at level 70).
-Infix " '#/\#' " := contract_prop_conjunction (at level 60).
+             +SCase "τ=sc". inversion H.    rewrite <- H7; exact HWF.
+                            apply Lemma5 in H4. exact H4. exact HWF.
+                            apply Lemma5 in H8. exact H8. exact HWF.
+                            apply Lemma5 in H3. exact H3. exact HWF.
 
-Notation " 'Sameobj' " := contract_sameobj.
-Notation " 'Vis' " := contract_vis.
-Notation " 'Equi' " := contract_equi.
-Notation " 'PROP:'  ":= contract_prop_varvar (at level 90).
-Notation " 'CONTR:'  ":=contract_free_cons (at level 95).
-Notation " 'ALL:' ":=contract_untyped_cons (at level 96).
+       -Case"Proof of E'|=Ψτ".
 
-
-
-Definition Store_Contr (τ:ConsCls):=
-  match τ with
-    |sc => ALL: m (CONTR: ((PROP: Sameobj m η'') #-->
-                                         ((PROP: Vis m η'') #\/#
-                                          (PROP: Vis η'' m) #\/#
-                                          (PROP: Equi m η''))))
-    |       
-    |_=> contract_free_cons contract_prop_true
-  end.
-ηhat
-
-
-
-
-
-
-
-
-
-Theorem theorem7 : 
+        
