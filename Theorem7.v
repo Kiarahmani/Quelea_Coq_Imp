@@ -48,37 +48,27 @@ Definition Models (Ex:Exec) (cont:contract_Contract) (eff:Effect) : Prop :=
 Notation " A '|=' B " := (Models A B) (at level 30).
 
 
-
+Notation " 'Ψ' " := Store_Contr.
 
 Theorem theorem7 : forall  (Ex Ex':Exec)(Θ Θ':Store)(Σ: SessSoup)(τ: ConsCls)(ss:SessID)
                       (ii:SeqNo)(σσ:session)(η:Effect)(ing1 ing2: Soup_Ing)(opτ:op_cls) (op: OperName),
                      (WF Ex) -> (CausCons Θ Ex) ->
                      opτ = mkop_cls op τ ->
-                     ing1 = mkSoup_Ing ss ii (opτ::σσ) ->
-                     ing2 = mkSoup_Ing ss (ii+1) σσ ->
+                     ing2.(s) = ss -> ing2.(i) = ii+1 -> ing2.(σ)  =σσ ->
+                     ing1.(s) = ss -> ing1.(i) = ii -> ing1.(σ)  = (opτ::σσ) ->
                      [[Ex,Θ,(Σ+soup+ing1) --η-->  Ex' ,Θ' , (Σ+soup+ing2) ]]
                      -> WF Ex'/\ (Ex'|=Store_Contr τ) η.
 
 Proof. intros Ex Ex' θ θ' Σ τ s i σ η ing1 ing2 opτ op.
-       intros HWF HCausCons. intros HSess HIng1 HIng2 H.
+       intros HWF HCausCons. intros HSess. intros Hs1 Hi1 Hσ1.  intros Hs2 Hi2 Hσ2.
        split.
        -Case"Proof of Well-Formedness of Ex'".
-             destruct τ. 
-             +SCase "τ=ec". inversion H.    rewrite <- H7; exact HWF.
-                            apply Lemma5 in H4. exact H4. exact HWF.
-                            apply Lemma5 in H8. exact H8. exact HWF.
-                            apply Lemma5 in H3. exact H3. exact HWF.
-
-             +SCase "τ=cc". inversion H.    rewrite <- H7; exact HWF.
-                            apply Lemma5 in H4. exact H4. exact HWF.
-                            apply Lemma5 in H8. exact H8. exact HWF.
-                            apply Lemma5 in H3. exact H3. exact HWF.
-
-             +SCase "τ=sc". inversion H.    rewrite <- H7; exact HWF.
-                            apply Lemma5 in H4. exact H4. exact HWF.
-                            apply Lemma5 in H8. exact H8. exact HWF.
-                            apply Lemma5 in H3. exact H3. exact HWF.
-
+             destruct H.
+                +exact HWF.
+                +apply Lemma5 in H1. exact H1. exact HWF.
+                +apply Lemma5 in H1. exact H1. exact HWF.
+                +apply Lemma5 in H0. exact H0. exact HWF.
+               
        -Case"Proof of E'|=Ψτ".
-
-        
+             destruct H. admit.  intuition.        
+Qed.

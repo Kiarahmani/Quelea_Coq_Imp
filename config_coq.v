@@ -13,9 +13,10 @@ Module  Config.
   |cc: ConsCls
   |sc: ConsCls.
   
-  Record op_cls : Set := mkop_cls {op:OperName; τ:ConsCls}.  (*An operation tagged with its consistency class*)
-  Definition session := list op_cls. 
-  Record Soup_Ing : Set := mkSoup_Ing{s:SessID; i:SeqNo; σ:session}. (*ingredients in Session Soup*)
+  Inductive op_cls : Type := |mkop_cls: OperName -> ConsCls -> op_cls.
+(*An operation tagged with its consistency class*)
+  Definition session := list op_cls.
+  Inductive Soup_Ing : Type := |mkSoup_Ing : SessID -> SeqNo -> session -> Soup_Ing.
   Definition SessSoup := (Ensemble Soup_Ing).
   Notation " S  '+soup+'  I " :=  (Union Soup_Ing S ((Singleton Soup_Ing) I))(at level 80). (*Add an ingredient to the soup*)
 (**)
