@@ -71,13 +71,13 @@ Proof.
                                                rewrite H13 in H14. assert (so = Ex-so). rewrite <- H7; unfold return_so; reflexivity.
                                                rewrite H15 in H14. apply SessionOrder in H14.
                                                inversion H14. 
-                                               assert (seq η = i0). intuition.
-                                               assert (seq η' = i0-1). specialize (H2  η'). intuition.
+                                               assert (seq η = i). intuition.
+                                               assert (seq η' = i-1). specialize (H2  η'). intuition.
                                                rewrite H19 in H17; rewrite H18 in H17. apply natSeq in H17. exact H17.
                                             +SCase"(a=η') /\ a=η ".
                                                rewrite H13 in H14; rewrite <- H14 in H2.
-                                               assert (seq η = i0-1). specialize (H2 η). intuition.
-                                               assert (seq η = i0). intuition.
+                                               assert (seq η = i-1). specialize (H2 η). intuition.
+                                               assert (seq η = i). intuition.
                                                rewrite H16 in H15. apply Why_Coq in H15. exact H15. }
    -Case "so a a". { assert (Ex-A a \/ ~Ex-A a). apply Soup_comp. inversion H12.
                 +SCase"Ex-A a". specialize (H1 a). apply H1 in H13. rewrite <- H7 in H13; unfold return_so in H13. contradiction.

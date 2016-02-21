@@ -98,14 +98,10 @@ Inductive Progress (η:Effect) :  Exec->Store->SessSoup ->Exec -> Store -> SessS
                                                                        ~((Θ r)η)                                                                          
                                                                                 ->[[Ex,Θ,Σ --η-->  Ex ,Θ' ,Σ ]]
 
-
 |EC: forall (τ:ConsCls) (Θ:Store)(Σ: SessSoup)(Ex Ex':Exec)(ss:SessID)(ii:SeqNo) 
-                             (opp:OperName)(opcls:op_cls)(r:ReplID)(ing1 ing2:Soup_Ing) (oplist:session), 
-                                                                       (τ=ec)-> (opcls = mkop_cls opp τ) -> [Θ |- Ex, <ss,ii,opp> ~r~> Ex', η] -> 
-                                                                       ing1.(s)=ss -> ing1.(i)=ii -> ing1.(σ)=opcls::oplist->
-                                                                       ing2.(s)=ss -> ing2.(i)=ii+1 -> ing2.(σ)=oplist->
-                                                                       (hd Error_opcls oplist=mkop_cls opp τ)
-                                                                                            ->[[Ex,Θ,Σ+soup+ing1 --η-->  Ex' ,Θ ,Σ+soup+ing2 ]]                   
+                             (opp:OperName)(opcls:op_cls)(r:ReplID) (oplist:session), 
+       ((τ=ec)-> (opcls = mkop_cls opp τ) -> [Θ |- Ex, <ss,ii,opp> ~r~> Ex', η] ->
+                                                                                [[Ex,Θ,Σ+soup+ (mkSoup_Ing ss ii (opcls::oplist))  --η-->  Ex' ,Θ ,Σ+soup+(mkSoup_Ing ss (ii+1) oplist ) ]]       )            
 
 
 |CC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ:Store)(Σ: SessSoup)(ing1 ing2:Soup_Ing)(r:ReplID)
