@@ -14,51 +14,22 @@ Require Import contract_definition.
 Require Import Coq.Strings.String.
 Require Import contract_subs.
 Parameter Eff_name : Effect -> string.
-Parameter Eff_Equi : Effect -> Effect -> Prop.
-Variable η'':EffVar.
+
+
+
+
+
+Definition η'':=effvar "η''".
 Fixpoint relation_Evaluation (rel : contract_Relation) (Ex:Exec) : Relation :=
   match rel with
     |contract_equi => Eff_Equi
     |contract_vis   => Ex-vis
     |contract_so => Ex-so
     |contract_sameobj => Ex-sameobj
-    |contract_relation_union R1 R2 => my_union (relation_Evaluation R1 Ex) (relation_Evaluation R2 Ex)
-    |contract_relation_intersect R1 R2 => my_intersect (relation_Evaluation R1 Ex)  (relation_Evaluation R2 Ex)
-    |contract_relation_closure R1 => (my_trans  (relation_Evaluation R1 Ex))
+    |contract_relation_union R1 R2 => Rel_Union (relation_Evaluation R1 Ex) (relation_Evaluation R2 Ex)
+    |contract_relation_intersect R1 R2 => Rel_Intersect (relation_Evaluation R1 Ex)  (relation_Evaluation R2 Ex)
+    |contract_relation_closure R1 => (Rel_Closure  (relation_Evaluation R1 Ex))
   end.
-
-Inductive Eval_result : Type :=
-|result : Prop -> Eval_result
-|error : Eval_result.
-
-Definition result_prop (e1:Eval_result) : Prop :=
-  match e1 with
-    |result T => T
-    |_=> False
-  end.
-
-Definition And_result (e1 e2: Eval_result): Eval_result:=
-  match (e1,e2) with
-    |(_,error) => error
-    |(error,_) => error
-    |(result X1,result X2) => result (X1/\X2)
-  end.
-
-Definition Or_result (e1 e2: Eval_result): Eval_result:=
-  match (e1,e2) with
-    |(_,error) => error
-    |(error,_) => error
-    |(result X1,result X2) => result (X1\/X2)
-  end.
-
-Definition Imp_result (e1 e2: Eval_result): Eval_result:=
-  match (e1,e2) with
-    |(_,error) => error
-    |(error,_) => error
-    |(result X1,result X2) => result (X1->X2)
-  end.
-
-
 
 Fixpoint Prop_Evaluation (pr:contract_Prop)(Ex:Exec) : Prop:=
   match pr with
@@ -67,7 +38,7 @@ Fixpoint Prop_Evaluation (pr:contract_Prop)(Ex:Exec) : Prop:=
     |contract_prop_conjunction p1 p2  =>  (Prop_Evaluation p1 Ex) /\ (Prop_Evaluation p2 Ex)
     |contract_prop_disjunction p1 p2  =>  (Prop_Evaluation p1 Ex) \/  (Prop_Evaluation p2 Ex)
     |contract_prop_implication p1 p2  =>  (Prop_Evaluation p1 Ex) ->  (Prop_Evaluation p2 Ex)
-    |_=> False                                                           
+    |_=> False                                                          
   end.
 
 Fixpoint contract_Eval (cont: contract_Contract) (Ex:Exec) (eff : Effect) (n:nat):Prop :=
@@ -76,9 +47,10 @@ Fixpoint contract_Eval (cont: contract_Contract) (Ex:Exec) (eff : Effect) (n:nat
            |contract_free_cons π => Prop_Evaluation (Prop_Subst π eff η'') Ex
            |_=> False
          end
-           
+          
     |S n' => match cont with
-              |contract_typed_cons e τ ψ =>  forall e:Effect,(Ex-A e)-> contract_Eval (contract_Subst ψ e (effvar (Eff_name e))) Ex eff n'
+              |contract_typed_cons e τ ψ =>  forall ef:Effect,(Ex-A ef) -> contract_Eval (contract_Subst ψ ef e) Ex eff n'
+              |contract_untyped_cons e ψ =>  forall ef:Effect,(Ex-A ef) -> contract_Eval (contract_Subst ψ ef e) Ex eff n' 
               |_=> False
             end
   end.
@@ -90,7 +62,6 @@ Fixpoint contract_free_number (cont:contract_Contract) : nat :=
     |contract_untyped_cons e ψ => contract_free_number ψ +1
     |contract_typed_cons e t ψ => contract_free_number ψ +1
   end.
-
 
 
 

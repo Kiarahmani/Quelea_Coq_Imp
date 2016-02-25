@@ -53,6 +53,7 @@ Notation "Ex -soo" := (soo Ex) (at level 0).
 Notation "Ex -hb" := (hb Ex) (at level 0).
 Notation "Ex -hbo" := (hbo Ex) (at level 0).
 
+Notation " A '∈' B " := (dom B A) (at level 80).
 
 (*op_key is a tuple of the form <s,i,op>. Each Effect has an op_key*)
 Inductive op_key : Type:=
@@ -67,7 +68,7 @@ Inductive Aux_Reduct (Θ:Store) (r: ReplID) : Exec -> op_key -> Exec -> Effect -
 OPER :  forall   (A A': Exec_A) (v: Value) 
                                 (vis so sameobj vis' so' sameobj' : Relation) 
                                 (s:SessID)(i:SeqNo) (op:OperName) (η η': Effect),
-
+              r ∈ Θ ->
               (Compute (Θ r) op)=v -> 
               η.(sess)=s /\ η.(seq)=i /\ η.(val)=v /\ η.(oper)=op  ->
               (forall eff, ((A eff) /\ eff.(sess)=s /\ eff.(seq) = i-1) <-> eff=η' ) ->
@@ -99,17 +100,17 @@ Inductive Progress (η:Effect) :  Exec->Store->SessSoup ->Exec -> Store -> SessS
                                                                                 ->[[Ex,Θ,Σ --η-->  Ex ,Θ' ,Σ ]]
 
 |EC: forall (τ:ConsCls) (Θ:Store)(Σ: SessSoup)(Ex Ex':Exec)(ss:SessID)(ii:SeqNo) 
-                             (opp:OperName)(opcls:op_cls)(r:ReplID) (oplist:session), 
+                             (opp:OperName)(r:ReplID) (oplist:session), 
        ((τ=ec) -> [Θ |- Ex, <ss,ii,opp> ~r~> Ex', η] ->
                                                                                 [[Ex,Θ,Σ+soup+ (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist))  --η-->  Ex' ,Θ ,Σ+soup+(mkSoup_Ing ss (ii+1) oplist ) ]]       )            
 
 
-|CC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ:Store)(Σ: SessSoup)(ing1 ing2:Soup_Ing)(r:ReplID)
-                         (ss:SessID)(ii:SeqNo)(opp:OperName),  
+|CC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ:Store)(Σ: SessSoup)(r:ReplID)
+                         (ss:SessID)(ii:SeqNo)(opp:OperName)(oplist:session),  
                                                                                 (τ=cc)->
                                                                                 (Included Effect (rtrn_invs Ex'-so η) (Θ r))->
-                                                                                ([ Θ |- Ex, <ss,ii,opp> ~r~> Ex', η])
-                                                                                                    ->[[Ex,Θ,Σ+soup+ing1 --η-->  Ex' ,Θ ,Σ+soup+ing2 ]]
+                                                                                ([ Θ |- Ex, <ss,ii,opp> ~r~> Ex', η]) 
+                                                                                ->[[Ex,Θ,Σ+soup+ (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist)) --η-->  Ex' ,Θ ,Σ+soup+(mkSoup_Ing ss (ii+1) oplist ) ]]
 
 
 |SC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ Θ':Store)(Σ: SessSoup)(ing1 ing2:Soup_Ing)(r:ReplID)

@@ -24,8 +24,8 @@ Proof.
   intros Θ Ex Ex' s i op η r. intros H_reduct H_WF.    
   (*Inversion on the reduction*)
   inversion H_reduct;
-  clear H9 H1 H0 H H2 H5 s0 i0 op0 η0;rename H3 into  H_η; rename H4 into  H_η'; rename H7 into H_vis';
-  rename H10 into H_so';rename H11 into H_sameobj';rename H6 into H_Exec; rename H8 into H_Exec'.
+  clear H10 H1 H0 H H3 H6 s0 i0 op0 η0. rename H4 into  H_η; rename H5 into  H_η'; rename H8 into H_vis';
+  rename H11 into H_so';rename H12 into H_sameobj';rename H7 into H_Exec; rename H9 into H_Exec'.
 
   (*Trivial assertions*)
   assert ((Ex')-A = A')                as H_EX'A.      rewrite <- H_Exec'; auto.

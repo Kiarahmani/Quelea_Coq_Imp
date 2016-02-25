@@ -38,7 +38,7 @@ Definition Hb : contract_Relation :=
 Definition Hbo:contract_Relation :=
   contract_relation_closure(contract_relation_union Soo contract_vis).
 
-
+(*
 Inductive my_trans (R1:Relation): Relation :=
 |my_base (e1 e2:Effect) : R1 e1 e2 -> my_trans R1 e1 e2
 |my_step (e1 e2 e3:Effect) : (my_trans R1) e1 e2 -> (my_trans R1) e2 e3 -> my_trans R1 e1 e3.
@@ -46,7 +46,7 @@ Inductive my_union (R1 R2:Relation) : Relation :=
 |my_uni_first  (e1 e2:Effect) : R1 e1 e2 -> my_union R1 R2 e1 e2
 |my_uni_second (e1 e2:Effect) : R2 e1 e2 -> my_union R1 R2 e1 e2.                                                   
 Inductive my_intersect (R1 R2: Relation) : Relation :=
-|intersect_cons (e1 e2: Effect) : R1 e1 e2 -> R2 e1 e2 -> (my_intersect R1 R2) e1 e2.
+|intersect_cons (e1 e2: Effect) : R1 e1 e2 -> R2 e1 e2 -> (my_intersect R1 R2) e1 e2.*)
 
 Inductive contract_Prop : Type :=
 |contract_prop_true

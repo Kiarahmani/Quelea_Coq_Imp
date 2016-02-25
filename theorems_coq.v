@@ -46,10 +46,10 @@ Proof.
     inversion reduct_H.
     unfold return_A. unfold return_vis. 
     intros a H_a. unfold not. intros vis'_H.
-    specialize (H4 a a). apply H4 in vis'_H. inversion  vis'_H. 
-    -Case "Θ r a /\ a = η ". { inversion H11. rewrite H13 in H12. apply Freshness in reduct_H. contradiction reduct_H. }
-    -Case "(A a /\ A a) /\ vis a a". {specialize (H a). rewrite <- H7 in H. unfold return_A in H. unfold return_vis in H. 
-                                                   inversion H11. inversion H12. apply H in H14. contradiction. }
+    specialize (H5 a a). apply H5 in vis'_H. inversion  vis'_H. 
+    -Case "Θ r a /\ a = η ". { inversion H12. rewrite H14 in H13. apply Freshness in reduct_H. contradiction reduct_H. }
+    -Case "(A a /\ A a) /\ vis a a". {specialize (H a). rewrite <- H8 in H. unfold return_A in H. unfold return_vis in H. 
+                                                   inversion H12. inversion H13. apply H in H15. contradiction. }
 Qed.
 
 
@@ -64,24 +64,24 @@ Proof.
     apply WellFormed_res1 in WF_H. inversion WF_H; inversion H0; clear H0 H H2  WF_H.
     inversion reduct_H.
     unfold return_A. unfold return_so. 
-    intros a H_a. unfold not. intros so'_H.
-    specialize (H5 a a). apply H5 in so'_H. inversion so'_H.
-    -Case "(so a η' \/ a = η') /\ a = η". { inversion H11; inversion H12.
+    intros a H_a. unfold not. intros so'_H. 
+    specialize (H6 a a). apply H6 in so'_H. inversion so'_H.
+    -Case "(so a η' \/ a = η') /\ a = η". { inversion H12; inversion H13.
                                             +SCase"(so a η') /\ a=η ".
-                                               rewrite H13 in H14. assert (so = Ex-so). rewrite <- H7; unfold return_so; reflexivity.
-                                               rewrite H15 in H14. apply SessionOrder in H14.
-                                               inversion H14. 
+                                               rewrite H14 in H15. assert (so = Ex-so). rewrite <- H8; unfold return_so; reflexivity.
+                                               rewrite H16 in H15. apply SessionOrder in H15.
+                                               inversion H15. 
                                                assert (seq η = i). intuition.
-                                               assert (seq η' = i-1). specialize (H2  η'). intuition.
-                                               rewrite H19 in H17; rewrite H18 in H17. apply natSeq in H17. exact H17.
+                                               assert (seq η' = i-1). specialize (H3  η'). intuition.
+                                               rewrite H20 in H18; rewrite H19 in H18. apply natSeq in H18. exact H18.
                                             +SCase"(a=η') /\ a=η ".
-                                               rewrite H13 in H14; rewrite <- H14 in H2.
-                                               assert (seq η = i-1). specialize (H2 η). intuition.
+                                               rewrite H14 in H15; rewrite <- H15 in H3.
+                                               assert (seq η = i-1). specialize (H3 η). intuition.
                                                assert (seq η = i). intuition.
-                                               rewrite H16 in H15. apply Why_Coq in H15. exact H15. }
-   -Case "so a a". { assert (Ex-A a \/ ~Ex-A a). apply Soup_comp. inversion H12.
-                +SCase"Ex-A a". specialize (H1 a). apply H1 in H13. rewrite <- H7 in H13; unfold return_so in H13. contradiction.
-                +SCase"~(Ex-A a)". apply Relation_Dom in H13. rewrite <- H7 in H13; unfold return_so in H13. contradiction. }
+                                               rewrite H17 in H16. apply Why_Coq in H16. exact H16. }
+   -Case "so a a". { assert (Ex-A a \/ ~Ex-A a). apply Soup_comp. inversion H13.
+                +SCase"Ex-A a". specialize (H1 a). apply H1 in H14. rewrite <- H8 in H14; unfold return_so in H14. contradiction.
+                +SCase"~(Ex-A a)". apply Relation_Dom in H14. rewrite <- H8 in H14; unfold return_so in H14. contradiction. }
 Qed.
 
 
@@ -95,9 +95,9 @@ Lemma hb'_Acyclicity: forall (Θ: Store)(Ex Ex':Exec) (s:SessID) (i:SeqNo)(op:Op
 Proof.
   intros Θ Ex Ex' s i op η r. intros H_reduct H_WF.
   (*Inversion on the reduction*)
-  inversion H_reduct;
-  clear H9 H1 H0 H H2 H5 s0 i0 op0 η0;rename H3 into  H_η; rename H4 into  H_η'; rename H7 into H_vis';
-  rename H10 into H_so';rename H11 into H_sameobj';rename H6 into H_Exec; rename H8 into H_Exec'.
+  inversion H_reduct.
+  clear H10 H1 H0 H H3 H6 s0 i0 op0 η0. rename H4 into  H_η; rename H5 into  H_η'; rename H8 into H_vis';
+  rename H11 into H_so';rename H12 into H_sameobj';rename H7 into H_Exec; rename H9 into H_Exec'.
 
 
   (*************************************************Assertions that will be needed*)
@@ -160,28 +160,28 @@ Proof.
             intuition.
             
             +SCase"(Θ r a)/\b=η AND (so b η')/\a=η".
-                     apply Freshness in H_reduct. rewrite H7 in H0. contradiction.
+                     apply Freshness in H_reduct. rewrite H8 in H0. contradiction.
 
             +SCase"(Θ r a)/\b=η AND b=η'/\a=η".
-                     apply Freshness in H_reduct. rewrite H7 in H0. contradiction.
+                     apply Freshness in H_reduct. rewrite H8 in H0. contradiction.
 
             +SCase"(Θ r a)/\b=η AND(so b a)".
-                     rewrite H6 in H4. specialize (H_newEff Θ Ex Ex' <s,i,op> η r).
-                     intuition; rename H7 into H_newEff.
+                     rewrite H7 in H5. specialize (H_newEff Θ Ex Ex' <s,i,op> η r).
+                     intuition; rename H8 into H_newEff.
                      specialize (H_newEff a ). rewrite  H_EXso in H_newEff.
                      auto.
 
             +SCase" (A a/\A b)/\(vis a b) AND a=η/\(so b η')".
                      specialize(H_soRefl Ex b η' η).
-                     rewrite H_EXso in H_soRefl; rewrite H3 in H_soRefl; rewrite H_η'def in H_soRefl.
-                     intuition. specialize (H1 a b). rewrite<- H8 in H10.  rewrite H_EXvis in H1; rewrite H_EXso in H1.
+                     rewrite H_EXso in H_soRefl; rewrite H4 in H_soRefl; rewrite H_η'def in H_soRefl.
+                     intuition. specialize (H1 a b). rewrite<- H9 in H11.  rewrite H_EXvis in H1; rewrite H_EXso in H1.
                      auto.
 
 
             +SCase"(A a/\A b)/\(vis a b) AND a=η/\b=η'".
-                     specialize (H_soDef Ex  b a). rewrite H0 in H_soDef; rewrite H8 in H_soDef.
-                     rewrite H3 in H_soDef; rewrite H_η'def in H_soDef. intuition.
-                     specialize (H1 η η'). rewrite H_EXvis in H1. rewrite H8 in H6; rewrite H0 in H6.
+                     specialize (H_soDef Ex  b a). rewrite H0 in H_soDef; rewrite H9 in H_soDef.
+                     rewrite H4 in H_soDef; rewrite H_η'def in H_soDef. intuition.
+                     specialize (H1 η η'). rewrite H_EXvis in H1. rewrite H9 in H7; rewrite H0 in H7.
                      auto.
 
             +SCase"(A a/\A b)/\(vis a b) AND so b a".
@@ -199,8 +199,8 @@ Proof.
   specialize (H Ex'). rewrite H_EX'vis in H; rewrite H_EX'so in H; rewrite H_EX'A in H. intuition.
   unfold WF1. rewrite  H_Exec'. intros a H_final.
   unfold not. 
-  specialize (H5 a).
-  exact H5.
+  specialize (H6 a).
+  exact H6.
 
 Qed.
-
+ 

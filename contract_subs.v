@@ -13,8 +13,16 @@ Import parameters.
 Import Operational_Semantics.
 Require Import contract_definition.
 
+Definition var_equal x y:=  match x with
+                         |effvar namex => match y with
+                                           |effvar namey => if (string_dec namex namey) then true  else false
+                                         end
+                       end.
 
-Parameter var_equal : forall x y : EffVar, {x = y} + {x <> y}.
+
+
+Parameter Eff_Equi:Effect -> Effect->Prop.
+
 Fixpoint Prop_Subst (pr:contract_Prop)(eff:Effect)(v:EffVar) : contract_Prop :=
   match pr with
     |contract_prop_true => contract_prop_true
@@ -32,10 +40,9 @@ Fixpoint Prop_Subst (pr:contract_Prop)(eff:Effect)(v:EffVar) : contract_Prop :=
   end.
 
 
-
 Fixpoint contract_Subst (ct:contract_Contract) (eff:Effect)(v:EffVar) : contract_Contract :=
   match ct with
     |contract_free_cons π => contract_free_cons (Prop_Subst π eff v)
-    |contract_untyped_cons e ψ => contract_Subst ψ eff v                               
-    |contract_typed_cons e τ ψ => contract_Subst ψ eff v
+    |contract_untyped_cons e ψ => contract_untyped_cons e (contract_Subst ψ eff v)                               
+    |contract_typed_cons e τ ψ => contract_typed_cons e τ (contract_Subst ψ eff v)
   end.

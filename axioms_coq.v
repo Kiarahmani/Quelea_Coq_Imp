@@ -34,12 +34,15 @@ Axiom FW: forall (Ex:Exec), (WF1 Ex) ->(WF2 Ex) ->(WF3 Ex) ->(WF4 Ex) ->(WF5 Ex)
 Axiom WFhelp: forall (Ex:Exec), (WF Ex)->(WF1 Ex)/\(WF2 Ex)/\(WF3 Ex)/\(WF4 Ex)/\(WF5 Ex)/\(WF6 Ex). (*and vice versa*)
 
 Axiom Freshness: forall  (Θ:Store)(ex1 ex2:Exec) (opk:op_key) (eff:Effect) (r:ReplID),  (*new effect in reductions is fresh*)
-                                                                                                [Θ|-ex1, opk ~r~> ex2, eff] -> ~ (Θ r) eff.
+                   [Θ|-ex1, opk ~r~> ex2, eff] -> ~ (Θ r) eff.
+Axiom CorrectFreshness: forall  (Θ:Store)(ex1 ex2:Exec) (opk:op_key) (eff:Effect) (r:ReplID),  (*new effect in reductions is fresh*)
+                                                                                                [Θ|-ex1, opk ~r~> ex2, eff] -> ~ (ex1-A) eff.
     
 (*Trivial Axioms*)
 Axiom SessionOrder : forall (Ex:Exec)(eff eff':Effect), Ex-so eff eff' -> ((eff.(sess) = eff'.(sess))/\ (  (eff.(seq))+1 <= (eff'.(seq)) )).
 Axiom Why_Coq : forall i:SeqNo, i=i-1 -> False.
 Axiom Relation_Dom : forall (Ex:Exec) (eff:Effect), (~Ex-A eff ) ->  (~Ex-so eff eff).
+
 Axiom Soup_comp : forall (Ex:Exec)(eff:Effect), (Ex-A eff)\/(~ Ex-A eff).
 Axiom natSeq: forall ss:SeqNo, ~(ss+1 <= (ss-1)). 
 
