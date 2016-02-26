@@ -39,7 +39,34 @@ Notation " 'ALL'  ":=(contract_untyped_cons) (at level 96).
 
 
 
-(*############################################################# PROVE THIS!!!!!! ######################################################*)
+
+
+Lemma Inversion_HBO_Help: forall (Ex:Exec)(a b:Effect)(A: Exec_A)(vis so sameobj :Relation),
+                            (Ex = (E A vis so sameobj))->
+                            (Ex-hbo a b) -> exists c, (Ex-hbo a c) /\ (Ex-so c b)/\(Ex-vis c b) .
+Proof.
+intros Ex a b A vis so sameobj HExec. intro HBO.
+induction HBO. rename x0 into x. rename y0 into y.
+exists y. intuition. apply t_step. apply H. apply so_trans. apply vis_trans. 
+destruct IHHBO2 as [k G]. exists k. intuition.
+destruct IHHBO1 as [p G].
+unfold hbo in G. intuition. unfold soo in H0. rewrite HExec in H0. compute in H0.
+
+
+apply t_step. rewrite HExec. compute.
+
+rewrite HExec in H0. unfold soo in H0. simpl in H0. inversion H0.
+intuition. subst.
+ right. 
+
+
+
+
+
+
+
+
+(*############################################################# Prove THIS!!!!!! ######################################################*)
 Notation " '<<' A ',' B ',' C  '>>'  " := (mkSoup_Ing A B C)(at level 10).
 Notation " OP '__' t " := (mkop_cls OP t) (at level 0).
 Notation " A '||' B " := (A +soup+ B). 
@@ -59,7 +86,7 @@ Definition Store_Contr (τ:ConsCls):contract_Contract:=
                                          ((PROP: Vis m η'') #\/#
                                           (PROP: Vis η'' m) #\/#
                                           (PROP: Equi m η''))))
-    |cc => ALL m (CONTR: ((PROP: Sameobj m η'') #--> (PROP: Vis m η'')))
+    |cc => ALL m (CONTR: ((PROP: Hbo m η'') #--> (PROP: Vis m η'')))
     |ec => ALL m (ALL n (CONTR: ((PROP: Hbo m n) #/\# (PROP: Vis n η'') #--> (PROP: Vis m η''))))
   end.
 Notation " 'Ψ' " := Store_Contr.
@@ -95,11 +122,11 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op.
                
        -Case"Proof of E'|=Ψτ". 
          inversion H.
-        +SCase"EFFVIS". admit.
+        +SCase"EFFVIS"; admit.
 
-        +SCase"[EC]".
+        +SCase"[EC]". 
          apply Injection_Help in H0. Focus 2. apply H1.
-         intuition; subst; clear H H1 oplist opcls Σ0; rename ii into i; rename θ' into θ; rename ss into s;rename H7 into H1.
+         intuition; subst; clear H H1 oplist Σ0; rename ii into i; rename θ' into θ; rename ss into s;rename H7 into H1.
          inversion H1; subst. compute.
           intros a Ha; intros b Hb. intros; intuition. 
          rewrite H9 in H5. intuition.
@@ -115,7 +142,7 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op.
          (*******THIS NEEDS TO BE PROVEN******)
 
          unfold CausCons in HCausCons.
-         
+          
          assert ((θ r) a). specialize (HCausCons r a b). apply HCausCons.
          apply H5.
          apply H4.
@@ -125,81 +152,27 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op.
 
 
 
-         +SCase"[CC]".
+        +SCase"[CC]". 
+         apply Injection_Help in H0. Focus 2. apply H1. intuition.
+         subst. clear H H1 oplist Σ0.
+         rename ii into i; rename ss into s; rename θ' into θ. simpl in H5.
+         unfold Models. inversion H8. subst.  
+         compute.
+         intros ef Hef Hbo' . rename ef into a. 
+         inversion Hbo'. intuition.
+         *SSCase"Inversion on hbo': case 1".
+          subst.
+          assert (θ r a). simpl in H5.
+          assert ((rtrn_invs so' η)  a) . apply first.  apply H.
+          unfold Included in H5. specialize (H5 a). apply H5 in H0. intuition.       
+          specialize (H10 a η). rewrite H10. left. auto.
+          
+         *SSCase"Inversion on hbo': case 2". 
+          subst. 
 
 
 
 
 
 
-
-
-
-
-
-         
-         
-         specialize (HCausCons r a η). intuition.  apply HCausCons.
-         
-         simpl HCausCons .
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(*
-
-Variable k :Effect.
-
-
-
-
-Definition TestProp : contract_Contract :=  CONTR: (PROP: Sameobj m η'').
-
-Eval compute in contract_Subst (TestProp) k (effvar "m").
-
-
-Definition ηname: string := "η".
-Variable ηsess: SessID.
-Variable ηseq: SeqNo. 
-Variable ηoper: OperName.
-Variable ηval: Value.
-
-Definition Kia : Effect := mkEffect ηname ηsess ηseq ηoper ηval.
-
-Variable kir1 : Exec_A.
-Definition kir4 (i j: Effect) : Prop := True.
-Definition kir2 (i j: Effect) : Prop := True.
-Definition kir3 (i j: Effect) : Prop := True.
-
-
-
-
-                                         
-Definition Ex := (E kir1 kir2 kir3 kir4).
-
-
-Eval compute in contract_free_number(Store_Contr sc).
-Eval compute in Store_Contr sc.
-Eval compute in (Ex |= Ψ sc) Kia.
-
-Eval compute in  contract_free_number (Store_Contr sc).*) 
+              

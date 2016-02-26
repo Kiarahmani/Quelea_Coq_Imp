@@ -16,7 +16,7 @@ Definition Store_Union  (Θ:Store) (r:ReplID) (η:Effect) (rcheck : ReplID): Exe
 if (equality_repl_id r rcheck) then (Θ rcheck) else (Θ rcheck).
 (*Return inverse of a relation in Effects*)
 Inductive rtrn_invs (rel:Relation) (n:Effect) : Ensemble Effect  :=
-first: forall m:Effect, (rel n m) -> (rtrn_invs rel n) m.
+first: forall m:Effect, (rel m n) -> (rtrn_invs rel n) m.
 (*Equality between two Ensemble*)
 Definition Set_Equi (A:Type) (E1 E2: Ensemble A) : Prop :=
 (Included A E1 E2)/\(Included A E2 E1).

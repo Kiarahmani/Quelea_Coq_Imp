@@ -36,7 +36,18 @@ Axiom WFhelp: forall (Ex:Exec), (WF Ex)->(WF1 Ex)/\(WF2 Ex)/\(WF3 Ex)/\(WF4 Ex)/
 Axiom Freshness: forall  (Θ:Store)(ex1 ex2:Exec) (opk:op_key) (eff:Effect) (r:ReplID),  (*new effect in reductions is fresh*)
                    [Θ|-ex1, opk ~r~> ex2, eff] -> ~ (Θ r) eff.
 Axiom CorrectFreshness: forall  (Θ:Store)(ex1 ex2:Exec) (opk:op_key) (eff:Effect) (r:ReplID),  (*new effect in reductions is fresh*)
-                                                                                                [Θ|-ex1, opk ~r~> ex2, eff] -> ~ (ex1-A) eff.
+                          [Θ|-ex1, opk ~r~> ex2, eff] -> ~ (ex1-A) eff.
+
+Axiom so_trans : forall (Ex:Exec)(e:Effect), Ex-so e e.
+Axiom vis_trans : forall (Ex:Exec)(e:Effect), Ex-vis e e.
+Axiom sameobj_trans : forall (Ex:Exec)(e:Effect), Ex-sameobj e e.
+Axiom hbo_trans : forall (Ex:Exec)(e:Effect), Ex-hbo e e.
+
+
+Axiom vis_sameobjso : forall Ex a b, Ex-so a b -> Ex-sameobj a b -> Ex-vis a b.
+
+
+
     
 (*Trivial Axioms*)
 Axiom SessionOrder : forall (Ex:Exec)(eff eff':Effect), Ex-so eff eff' -> ((eff.(sess) = eff'.(sess))/\ (  (eff.(seq))+1 <= (eff'.(seq)) )).
