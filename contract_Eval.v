@@ -17,7 +17,7 @@ Parameter Eff_name : Effect -> string.
 
 
 
-
+Axiom  Eff_Equi_refl : forall a,  Eff_Equi a a.
 
 Definition η'':=effvar "η''".
 Fixpoint relation_Evaluation (rel : contract_Relation) (Ex:Exec) : Relation :=

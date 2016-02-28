@@ -113,15 +113,15 @@ Inductive Progress (η:Effect) :  Exec->Store->SessSoup ->Exec -> Store -> SessS
                                                                                 ->[[Ex,Θ,Σ+soup+ (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist)) --η-->  Ex' ,Θ ,Σ+soup+(mkSoup_Ing ss (ii+1) oplist ) ]]
 
 
-|SC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ Θ':Store)(Σ: SessSoup)(ing1 ing2:Soup_Ing)(r:ReplID)
-                          (ss:SessID)(ii:SeqNo)(opp:OperName),  
+|SC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ Θ':Store)(Σ: SessSoup)(r:ReplID)
+                          (ss:SessID)(ii:SeqNo)(opp:OperName)(oplist:session),  
                                                                                  (τ=sc)->
                                                                                  ([Θ|-Ex, <ss,ii,opp> ~r~> Ex', η])->
                                                                                  (Included Effect (Ex-A)(Θ r))->
                                                                                  (Included ReplID (dom Θ) (dom Θ') /\ Included ReplID (dom Θ') (dom Θ)) ->
                                                                                  forall r':ReplID, ((dom Θ') r') ->  
                                                                                                 (Set_Equi Effect (Θ' r') (Union Effect (Θ r')  (Singleton Effect η)))
-                                                                                                                           ->[[Ex,Θ,Σ+soup+ing1 --η-->  Ex' ,Θ' ,Σ+soup+ing2 ]]
+                                                                                ->[[Ex,Θ,Σ+soup+ (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist)) --η-->  Ex' ,Θ' ,Σ+soup+(mkSoup_Ing ss (ii+1) oplist ) ]]
 
 where " '[['  E , Θ , Σ  '--' η '-->'  F , T ,  S ']]' " := (Progress η E Θ Σ F T S).
 
