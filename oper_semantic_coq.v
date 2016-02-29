@@ -102,7 +102,7 @@ Inductive Progress (η:Effect) :  Exec->Store->SessSoup ->Exec -> Store -> SessS
 |EC: forall (τ:ConsCls) (Θ:Store)(Σ: SessSoup)(Ex Ex':Exec)(ss:SessID)(ii:SeqNo) 
                              (opp:OperName)(r:ReplID) (oplist:session), 
        ((τ=ec) -> [Θ |- Ex, <ss,ii,opp> ~r~> Ex', η] ->
-                                                                                [[Ex,Θ,Σ+soup+ (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist))  --η-->  Ex' ,Θ ,Σ+soup+(mkSoup_Ing ss (ii+1) oplist ) ]]       )            
+                                                                                [[Ex,Θ,Σ ||| (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist))  --η-->  Ex' ,Θ ,Σ ||| (mkSoup_Ing ss (ii+1) oplist ) ]]       )            
 
 
 |CC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ:Store)(Σ: SessSoup)(r:ReplID)
@@ -110,7 +110,7 @@ Inductive Progress (η:Effect) :  Exec->Store->SessSoup ->Exec -> Store -> SessS
                                                                                 (τ=cc)->
                                                                                 (Included Effect (rtrn_invs Ex'-so η) (Θ r))->
                                                                                 ([ Θ |- Ex, <ss,ii,opp> ~r~> Ex', η]) 
-                                                                                ->[[Ex,Θ,Σ+soup+ (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist)) --η-->  Ex' ,Θ ,Σ+soup+(mkSoup_Ing ss (ii+1) oplist ) ]]
+                                                                                ->[[Ex,Θ,Σ||| (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist)) --η-->  Ex' ,Θ ,Σ|||(mkSoup_Ing ss (ii+1) oplist ) ]]
 
 
 |SC: forall (τ:ConsCls)(Ex Ex':Exec) (Θ Θ':Store)(Σ: SessSoup)(r:ReplID)
@@ -121,7 +121,7 @@ Inductive Progress (η:Effect) :  Exec->Store->SessSoup ->Exec -> Store -> SessS
                                                                                  (Included ReplID (dom Θ) (dom Θ') /\ Included ReplID (dom Θ') (dom Θ)) ->
                                                                                  forall r':ReplID, ((dom Θ') r') ->  
                                                                                                 (Set_Equi Effect (Θ' r') (Union Effect (Θ r')  (Singleton Effect η)))
-                                                                                ->[[Ex,Θ,Σ+soup+ (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist)) --η-->  Ex' ,Θ' ,Σ+soup+(mkSoup_Ing ss (ii+1) oplist ) ]]
+                                                                                ->[[Ex,Θ,Σ||| (mkSoup_Ing ss ii ((mkop_cls opp τ)::oplist)) --η-->  Ex' ,Θ' ,Σ|||(mkSoup_Ing ss (ii+1) oplist ) ]]
 
 where " '[['  E , Θ , Σ  '--' η '-->'  F , T ,  S ']]' " := (Progress η E Θ Σ F T S).
 

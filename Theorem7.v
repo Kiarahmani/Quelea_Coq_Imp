@@ -8,6 +8,7 @@ Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Program.Tactics.
 Require Import parametes_coq.
 Require Import config_coq.
+Import Config.
 Require Import oper_semantic_coq.
 Require Import axioms_coq.
 Require Import theorems_coq.
@@ -15,11 +16,6 @@ Require Import contract_definition.
 Require Import contract_subs.
 Require Import contract_Eval.
 Require Import lemma5.
-Require Import Stlc.
-Require Import Imp.
-Require Import Equiv.
-Import STLC.
-Import Config.
 Import parameters.
 Import Operational_Semantics.
 
@@ -53,10 +49,9 @@ Proof.
 intros Ex a b A vis so sameobj HExec. intro HBO.
 induction HBO.
 -Case"direct hbo".
- rename x0 into x. rename y0 into y.
  right. apply H.
 
--Case"indirect hbo". rename x0 into x. rename y0 into y. rename z0 into z.
+-Case"indirect hbo". 
  destruct IHHBO2.
  +SCase"left2".
    left.
@@ -73,12 +68,11 @@ Qed.
 (*############################################################# Prove THIS!!!!!! ######################################################*)
 Notation " '<<' A ',' B ',' C  '>>'  " := (mkSoup_Ing A B C)(at level 10).
 Notation " OP '__' t " := (mkop_cls OP t) (at level 0).
-Notation " A '||' B " := (A +soup+ B). 
 
 Theorem Injection_Help : forall Σ0 Σ ss ii opp s i op τ0 τ oplist σ,
-  (Σ0 +soup+  mkSoup_Ing ss ii (mkop_cls opp τ0 :: oplist)) =
-  (Σ +soup+  mkSoup_Ing s i (mkop_cls op τ :: σ)) ->
-                              ((Σ0 || << ss,ii+1,oplist>>) = (Σ || << s, i + 1, σ >>)) ->
+  (Σ0 ||| mkSoup_Ing ss ii (mkop_cls opp τ0 :: oplist)) =
+  (Σ |||  mkSoup_Ing s i (mkop_cls op τ :: σ)) ->
+                              ((Σ0 ||| << ss,ii+1,oplist>>) = (Σ ||| << s, i + 1, σ >>)) ->
                                                  σ=oplist /\ τ=τ0 /\ opp=op /\ i=ii /\ s=ss /\ Σ=Σ0 .
 Proof. admit. Qed.
 
@@ -111,7 +105,7 @@ Notation " A '|=' B " := (Models A B) (at level 30).
 Theorem theorem7 : forall  (Ex Ex':Exec)(Θ Θ':Store)(Σ: SessSoup)(τ: ConsCls)(ss:SessID)
                       (ii:SeqNo)(σσ:session)(η:Effect) (op: OperName),
                      (WF Ex) -> (CausCons Θ Ex) ->
-                     [[Ex,Θ,(Σ+soup+(mkSoup_Ing ss ii ((mkop_cls op τ)::σσ))) --η-->  Ex' ,Θ' , (Σ+soup+(mkSoup_Ing ss (ii+1) σσ)) ]]
+                     [[Ex,Θ,(Σ|||(mkSoup_Ing ss ii ((mkop_cls op τ)::σσ))) --η-->  Ex' ,Θ' , (Σ|||(mkSoup_Ing ss (ii+1) σσ)) ]]
                      -> WF Ex'/\ (Ex'|=Store_Contr τ) η.
 
 Proof. intros Ex Ex' θ θ' Σ τ s i σ η op.
@@ -126,7 +120,20 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op.
                
        -Case"Proof of E'|=Ψτ". 
          inversion H.
-        +SCase"EFFVIS"; admit.
+        +SCase"EFFVIS". subst. rename Ex' into Ex. inversion H0.
+         induction  (Σ ||| << s, i, (op) __ (τ) :: σ >> ) in H.
+         injection H0.
+         compute in H0.
+         injection H0.
+
+      
+          compute in H0. 
+   
+         inversion H0.
+u
+         inversion H0.
+         inversion H.
+         unfold Models.admit.
 
         +SCase"[EC]". 
          apply Injection_Help in H0. Focus 2. apply H1.
@@ -164,10 +171,13 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op.
          inversion H8. subst.
          simpl. intros ef HA' HBO'. rename ef into a.
          assert ((E A' vis' so' sameobj')-hbo a η). intuition.
-         apply Inversion_HBO_Help with (vis:=vis')(so:=so')(sameobj:=sameobj')(A:=A') in H. 
+         apply Inversion_HBO_Help with (vis:=vis')(so:=so')(sameobj:=sameobj')(A:=A') in H.
+
+         (*begin change*)
+         destruct H.
+         *
          destruct H as [c G]. unfold Rel_Union in G. inversion G.
-         inversion H0.
-         *SSCase"SSCaseR".
+         inversion H0.       
           generalize (H10 c η). intro. rewrite H3 in H1.
           inversion H1.  unfold CausCons in HCausCons. specialize (HCausCons r a c).
           inversion H9. apply HCausCons in H11. 
@@ -178,13 +188,22 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op.
           apply CorrectFreshness in H8. compute in H8. inversion H9. inversion H11.
           apply H8 in H16. contradiction.
           
-         *SSCase"SSCaseL".
           assert ((θ r) c). apply H5. compute. apply first. compute in H1. apply H1.
           assert ((E A vis so sameobj)-hbo a c). admit. (* PROOOOOOVE MEEEEEEE   *)
           unfold CausCons in HCausCons. specialize (HCausCons r a c).
           assert (θ r a). apply HCausCons. apply H3. apply H9.
           specialize (H10 a η). rewrite H10.
           left. split. apply H11. reflexivity.
+
+         * destruct H.  Focus 2. apply H.
+           specialize (H10 a). rewrite H10. left. split.
+           apply H5. compute. apply first. compute in H. apply H. reflexivity.
+
+           
+           
+
+
+
          *SSCase"Trivial".
           reflexivity.
 
