@@ -25,21 +25,20 @@ Definition WF3 (Ex:Exec) := forall (a b c: Effect), (Ex-so a b)/\(Ex-so b c) -> 
 Definition WF4 (Ex:Exec) := forall (a:Effect), (Ex-A a) -> (Ex-sameobj a a).
 Definition WF5 (Ex:Exec) := forall (a b : Effect),(Ex-A a) -> (Ex-A b) ->   (Ex-sameobj a b)-> (Ex-sameobj b a).
 Definition WF6 (Ex:Exec) := forall (a b c: Effect), (Ex-A a) -> (Ex-A b) ->(Ex-A c) -> (Ex-sameobj a b)/\(Ex-sameobj b c) -> (Ex-sameobj a c ).
-
+Definition WF7 (Ex:Exec) := forall (a b : Effect), (~(Ex-A a)) \/(~(Ex-A b))  -> ~(Ex-so a b) /\  ~(Ex-vis a b) /\  ~(Ex-sameobj a b).
 
 
 (*------------------------------------------------------------------------------------------------------------------------*)
 (******************AXIOMS******************)
-Axiom FW: forall (Ex:Exec), (WF1 Ex) ->(WF2 Ex) ->(WF3 Ex) ->(WF4 Ex) ->(WF5 Ex) ->(WF6 Ex) ->(WF Ex). (*WF1 to WF6 result WF*)
-Axiom WFhelp: forall (Ex:Exec), (WF Ex)->(WF1 Ex)/\(WF2 Ex)/\(WF3 Ex)/\(WF4 Ex)/\(WF5 Ex)/\(WF6 Ex). (*and vice versa*)
+Axiom FW: forall (Ex:Exec), (WF1 Ex) ->(WF2 Ex) ->(WF3 Ex) ->(WF4 Ex) ->(WF5 Ex) ->(WF6 Ex)-> (WF7 Ex) ->(WF Ex). (*WF1 to WF6 result WF*)
+Axiom WFhelp: forall (Ex:Exec), (WF Ex)->(WF1 Ex)/\(WF2 Ex)/\(WF3 Ex)/\(WF4 Ex)/\(WF5 Ex)/\(WF6 Ex)/\(WF7 Ex). (*and vice versa*)
 
 Axiom Freshness: forall  (Θ:Store)(ex1 ex2:Exec) (opk:op_key) (eff:Effect) (r:ReplID),  (*new effect in reductions is fresh*)
                    [Θ|-ex1, opk ~r~> ex2, eff] -> ~ (Θ r) eff.
 Axiom CorrectFreshness: forall  (Θ:Store)(ex1 ex2:Exec) (opk:op_key) (eff:Effect) (r:ReplID),  (*new effect in reductions is fresh*)
                           [Θ|-ex1, opk ~r~> ex2, eff] -> ~ (ex1-A) eff.
 
-Axiom so_refl : forall (Ex:Exec)(e:Effect), Ex-so e e.
-Axiom vis_refl : forall (Ex:Exec)(e:Effect), Ex-vis e e.
+
 Axiom sameobj_refl : forall (Ex:Exec)(e:Effect), Ex-sameobj e e.
 Axiom so_trans: forall (Ex:Exec)(a b c: Effect), Ex-so a b -> Ex-so b c -> Ex-so a c.
 Axiom sameobj_trans: forall (Ex:Exec)(a b c: Effect), Ex-sameobj a b -> Ex-sameobj b c -> Ex-sameobj a c.
@@ -50,9 +49,10 @@ Axiom sameobj_trans: forall (Ex:Exec)(a b c: Effect), Ex-sameobj a b -> Ex-sameo
     
 (*Trivial Axioms*)
 Axiom SessionOrder : forall (Ex:Exec)(eff eff':Effect), Ex-so eff eff' -> ((eff.(sess) = eff'.(sess))/\ (  (eff.(seq))+1 <= (eff'.(seq)) )).
-Axiom Why_Coq : forall i:SeqNo, i=i-1 -> False.
+Axiom Why_Coq : forall i:SeqNo, (i=i-1)\/(i=i+1) -> False.
 Axiom Relation_Dom : forall (Ex:Exec) (eff:Effect), (~Ex-A eff ) ->  (~Ex-so eff eff).
 
+Axiom Seq_Uniq : forall (i i': SeqNo)(s s': SessID)(σ σ' : session), (<<s , i , σ >>) = (<<s', i' , σ' >>) -> i=i'.
 Axiom Soup_comp : forall (Ex:Exec)(eff:Effect), (Ex-A eff)\/(~ Ex-A eff).
 Axiom natSeq: forall ss:SeqNo, ~(ss+1 <= (ss-1)). 
 

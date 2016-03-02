@@ -103,13 +103,16 @@ Notation " A '|=' B " := (Models A B) (at level 30).
 
 
 Theorem theorem7 : forall  (Ex Ex':Exec)(Θ Θ':Store)(Σ: SessSoup)(τ: ConsCls)(ss:SessID)
-                      (ii:SeqNo)(σσ:session)(η:Effect) (op: OperName),
+                      (ii:SeqNo)(σσ:session)(η:Effect) (op: OperName)(Ing1 Ing2: Soup_Ing),
                      (WF Ex) -> (CausCons Θ Ex) ->
-                     [[Ex,Θ,(Σ|||(mkSoup_Ing ss ii ((mkop_cls op τ)::σσ))) --η-->  Ex' ,Θ' , (Σ|||(mkSoup_Ing ss (ii+1) σσ)) ]]
+                     (Ing1 = (mkSoup_Ing ss ii ((mkop_cls op τ)::σσ))) ->
+                     (Ing2 = (mkSoup_Ing ss (ii+1) σσ)) ->
+                     (WF_union Σ Ing1) -> (WF_union Σ Ing2) ->
+                     [[Ex,Θ,(Σ||| Ing1) --η-->  Ex' ,Θ' , (Σ|||Ing2)]]        
                      -> WF Ex'/\ (Ex'|=Store_Contr τ) η.
 
-Proof. intros Ex Ex' θ θ' Σ τ s i σ η op.
-       intros HWF HCausCons. intro H.
+Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2. 
+       intros HWF HCausCons. intros HIng1 HIng2. intros WFl WFr. intro H.
        split.
        -Case"Proof of Well-Formedness of Ex'". 
         destruct H.
@@ -121,35 +124,67 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op.
        -Case"Proof of E'|=Ψτ". 
          inversion H.
         +SCase"EFFVIS". subst. rename Ex' into Ex. inversion H0.
-         induction  (Σ ||| << s, i, (op) __ (τ) :: σ >> ) in H.
-         injection H0.
-         compute in H0.
-         injection H0.
-
-      
-          compute in H0. 
-   
-         inversion H0.
-u
-         inversion H0.
-         inversion H.
-         unfold Models.admit.
-
-        +SCase"[EC]". 
+         remember (<< s, i, (op) __ (τ) :: σ >>) as Ing1.
+         remember ( << s, i + 1, σ >>) as Ing2.
+         assert ( forall (S S':SessSoup), S=S' -> forall (I:Soup_Ing), (In Soup_Ing S I -> In Soup_Ing S' I)) as Heq.
+         apply Sess_Equal. specialize (Heq (Σ |||Ing1)  (Σ ||| Ing2 )).
+         intuition. unfold In in H4.
+         assert ((Σ ||| Ing1) Ing1). apply Union_intror. compute. intuition.
+         specialize (H4 Ing1). apply H4 in H6.
+         inversion H6. unfold WF_union in WFl. contradiction.
+         inversion H7. 
+         subst.
+         apply Seq_Uniq in H10.
+         assert (forall i:SeqNo, i=i-1\/i=i+1 -> False) as Triv. apply Why_Coq .
+         specialize (Triv i).
+         assert False. apply Triv. right. rewrite H10. reflexivity.
+         contradiction.
+        +SCase"[EC]". subst.
          apply Injection_Help in H0. Focus 2. apply H1.
-         intuition; subst; clear H H1 oplist Σ0; rename ii into i; rename θ' into θ; rename ss into s;rename H7 into H1.
+         intuition; subst; clear H H1; rename ii into i; rename θ' into θ; rename ss into s;rename H7 into H1.
          inversion H1; subst. compute.
           intros a Ha; intros b Hb. intros; intuition. 
          rewrite H9 in H5. intuition.
-         Focus 2.
+         Focus 2. 
          apply CorrectFreshness in H1.
          compute in H1. apply H1 in H14. inversion H14.
          remember (E A vis so sameobj) as Ex.
          assert ((E A' vis' so' sameobj')-hbo a b) as HBO'. 
          intuition. clear H4.
 
+
+(*-----------------------------------------------------------------------------*)
+         (*******THIS NEEDS TO BE PROVEN******)
+         remember (E A' vis' so' sameobj') as Ex'.
+         assert (Ex'-vis b η). admit.
+         assert (Ex'-hbo a η). unfold hbo. unfold Rel_Closure.
+         inversion HBO'.
+
+
+
+         apply t_step.
+         
+         assert (Ex-A a \/ ~Ex-A a). apply Soup_comp.
+         assert (Ex'-vis a b). unfold hbo in HBO'. compute  in HBO'.      intuition.
+         
+
+         
+         assert (~(a=η)).
+         intro. apply CorrectFreshness in H1. subst. 
+ 
+         
          assert (Ex-hbo a b). unfold hbo. unfold hbo in HBO'. simpl in HBO'.
          unfold soo in HBO'. simpl in HBO'. unfold soo.  admit.
+
+
+
+
+
+
+
+
+
+(*-----------------------------------------------------------------------------*)
          (*******THIS NEEDS TO BE PROVEN******)
 
          unfold CausCons in HCausCons.
@@ -163,9 +198,9 @@ u
 
 
 
-        +SCase"[CC]". 
+        +SCase"[CC]". subst.
          apply Injection_Help in H0. Focus 2. apply H1. intuition.
-         subst. clear H H1 oplist Σ0.
+         subst. clear H H1.
          rename ii into i; rename ss into s; rename θ' into θ. simpl in H5.
          unfold Models. (**)
          inversion H8. subst.
@@ -220,15 +255,11 @@ u
          destruct HA'.
          *SSCase"a∈A".
           remember (E A' vis' so' sameobj')-hbo as hbo'.
-          (*
-          assert ((hbo' a η)->(vis' a η) ). admit.
-          assert ((hbo' η a)->(vis' η a) ). admit.
-*)
-
           unfold Included in  H4. specialize (H4 a).
           simpl in H4. unfold In in H4. apply H4 in H.
           assert (vis' a η). rewrite H14. left. auto.
           left. left. apply H0.
+          
 
 
 

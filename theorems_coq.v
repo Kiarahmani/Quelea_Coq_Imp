@@ -78,7 +78,10 @@ Proof.
                                                rewrite H14 in H15; rewrite <- H15 in H3.
                                                assert (seq η = i-1). specialize (H3 η). intuition.
                                                assert (seq η = i). intuition.
-                                               rewrite H17 in H16. apply Why_Coq in H16. exact H16. }
+                                               rewrite H17 in H16.
+                                               assert (forall i:SeqNo, i=i-1\/i=i+1 -> False).
+                                               apply Why_Coq. specialize (H18 i).
+                                               apply H18. left. apply H16. }
    -Case "so a a". { assert (Ex-A a \/ ~Ex-A a). apply Soup_comp. inversion H13.
                 +SCase"Ex-A a". specialize (H1 a). apply H1 in H14. rewrite <- H8 in H14; unfold return_so in H14. contradiction.
                 +SCase"~(Ex-A a)". apply Relation_Dom in H14. rewrite <- H8 in H14; unfold return_so in H14. contradiction. }

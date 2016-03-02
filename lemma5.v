@@ -69,7 +69,10 @@ Proof.
   Case "----------------Proof of WF6 ".
         { unfold WF6. intros a b c. rewrite H_Exec'; rewrite H_EX'A; rewrite H_EX'sameobj.
           intros G1 G2 G3 G4. specialize (H_sameobj' a c).
-          apply H_sameobj' in G1. exact G1. exact G3. }   
+          apply H_sameobj' in G1. exact G1. exact G3. }
+
+  Case "----------------Proof of WF7 ".
+        {admit. }
 Qed.
 
  

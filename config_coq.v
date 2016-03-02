@@ -18,14 +18,15 @@ Module  Config.
   Definition session := list op_cls.
   Inductive Soup_Ing : Type := |mkSoup_Ing : SessID -> SeqNo -> session -> Soup_Ing.
   Definition SessSoup := (Ensemble Soup_Ing).
+  Notation " '<<' A ',' B ',' C  '>>'  " := (mkSoup_Ing A B C)(at level 10).
+  Definition WF_union (S:SessSoup) (I:Soup_Ing): Prop := ~In Soup_Ing S I. 
+  Axiom  Sess_Equal : forall (S S':SessSoup), S=S' -> forall (I:Soup_Ing), (In Soup_Ing S I -> In Soup_Ing S' I).
 
-  Inductive My_Ing_Union (S:SessSoup) (I:Soup_Ing) : Soup_Ing -> Prop :=
-  | Union_introl :forall x: Soup_Ing, In Soup_Ing S x -> ~ (x=I) ->  My_Ing_Union S I x
-  | Union_intror :forall x: Soup_Ing, ~In Soup_Ing S x -> x=I   -> My_Ing_Union S I x.
+
+
 
   
-    
-  Notation " S  '|||'  I " :=  (Union Soup_Ing S ((Singleton Soup_Ing) I))(at level 80).  (*Add an ingredient to the soup*)
+  Notation " S  '|||'  I " :=  ( Union Soup_Ing S  (Singleton Soup_Ing I) )   (at level 80). (*Add an ingredient to the soup*)
 (**)
 
 End Config.
