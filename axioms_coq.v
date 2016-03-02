@@ -46,11 +46,19 @@ Axiom sameobj_trans: forall (Ex:Exec)(a b c: Effect), Ex-sameobj a b -> Ex-sameo
 
 
 
+
+
+
     
 (*Trivial Axioms*)
 Axiom SessionOrder : forall (Ex:Exec)(eff eff':Effect), Ex-so eff eff' -> ((eff.(sess) = eff'.(sess))/\ (  (eff.(seq))+1 <= (eff'.(seq)) )).
 Axiom Why_Coq : forall i:SeqNo, (i=i-1)\/(i=i+1) -> False.
 Axiom Relation_Dom : forall (Ex:Exec) (eff:Effect), (~Ex-A eff ) ->  (~Ex-so eff eff).
+Axiom Vis_Domain : forall (Ex:Exec)(a:Effect), ((Rel_dom Ex-vis a) -> (Ex-A a)).
+Axiom So_Domain : forall (Ex:Exec)(a:Effect), ((Rel_dom Ex-so a) -> (Ex-A a)).
+Axiom Sameobj_Domain : forall (Ex:Exec)(a:Effect), ((Rel_dom Ex-sameobj a) -> (Ex-A a)).
+Axiom Hbo_Domain : forall (Ex:Exec)(a:Effect), ((Rel_dom Ex-hbo a) -> (Ex-A a)).
+
 
 Axiom Seq_Uniq : forall (i i': SeqNo)(s s': SessID)(σ σ' : session), (<<s , i , σ >>) = (<<s', i' , σ' >>) -> i=i'.
 Axiom Soup_comp : forall (Ex:Exec)(eff:Effect), (Ex-A eff)\/(~ Ex-A eff).
