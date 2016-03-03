@@ -16,6 +16,8 @@ Require Import contract_definition.
 Require Import contract_subs.
 Require Import contract_Eval.
 Require Import lemma5.
+Require Import Coq.Arith.Minus.
+Require Import Coq.Arith.Lt.
 Import parameters.
 Import Operational_Semantics.
 
@@ -45,6 +47,7 @@ Proof.
   +Case"inductive step".
    apply t_trans with (y:=y). apply IHHbo1. apply IHHbo2.
 Qed.  
+
 
 
 
@@ -84,16 +87,71 @@ Proof. intros Ex Ex' a b η r i s op θ H HWF HBOa Ha Hb HBOb.
 
 
 
+
+
+Lemma triv_nat : forall (n:nat), ~(lt (S n) n).
+  Proof.
+    intro n.
+    intro.
+    induction n as [|n'].
+    inversion H.
+    inversion H.
+    apply IHn'. unfold lt. rewrite H1. apply le_n.
+    subst.  unfold lt in H. apply le_S_n in H. apply le_lt_n_Sm in H.
+    apply lt_S_n in H. intuition.
+Qed.
+    
+Lemma HBO'_HBO_help : forall (Ex Ex':Exec)(η:Effect) (r:ReplID) (i:SeqNo)(s:SessID)(op:OperName)(θ:Store),
+                        [ θ |- Ex, < s, i, op > ~ r ~> Ex', η] ->
+                        ~(exists z:Effect, Ex'-A z /\ Ex'-hbo η z).
+                     
+Proof.
+  intros Ex Ex' η r u s op θ H.
+  intro Hc.
+  destruct Hc as [k G].
+  intuition. rename H0 into HAk. rename H1 into Hbo'.
+  assert ( [ θ |- Ex, < s, u, op > ~ r ~> Ex', η]) as Hreduct. apply H.
+  apply CorrectFreshness with (ex1:=Ex)(ex2:=Ex')(opk :=  < s, u, op >) (eff:=η) (r:=r) in H. rename H into Hfresh.  
+  induction Hbo'.
+
+  -Case"Induction Base".
+   rename H into Htemp.
+   inversion Htemp as [Hsoo'|Hvis'].
+   +SCase"soo'".
+    inversion Hsoo'; clear Hsoo'; clear Htemp; rename H into Hso'; rename H0 into Hsameobj'; rename x into η.
+    inversion Hreduct; subst. simpl in Hso'. remember (E A vis so sameobj) as Ex; remember (E A' vis' so' sameobj') as Ex'.
+    specialize (H11 η y). rewrite H11 in Hso'.
+    inversion Hso'.
+    *SSCase"new effect". inversion H.  clear H. rename H0 into Hso. subst y.
+     inversion Hso. assert (seq η = u). intuition. assert (seq η'=u-1). specialize (H5 η'). intuition.
+     replace so with Ex-so in H. rewrite  SO_Seq_General  in H. rewrite H0 in H. rewrite H1 in H.
+     induction u. simpl in H. inversion H.
+     simpl in H. rewrite <-  minus_n_O in H.  apply  triv_nat in  H. apply H.
+     rewrite HeqEx. auto.
+     subst. rename η' into η. specialize (H5 η). intuition.    
+    *SSCase"Same as so". apply WF_Relation with (a:=η) (b:=y) (r:=so) in H. inversion H.
+     replace so with Ex-so in H0. apply So_Domain in H0. contradiction.
+     rewrite HeqEx. auto.
+    
+   +SCase"vis'". clear Htemp. inversion Hreduct. subst. rename x into η.
+    specialize (H8 η y). simpl in Hvis'. apply H8 in Hvis'.
+    inversion Hvis'.
+    *SSCase"θ r η /\ y = η". inversion H. apply Freshness in Hreduct. contradiction.
+    *SSCase"(A η /\ A y) /\ vis η y". apply CorrectFreshness in Hreduct. simpl in  Hreduct. inversion H.
+     inversion H0. contradiction.
+     
+  -Case"Induction Step". rename x into  η.  intuition. apply H.
+   assert ((Ex') -A y \/ ~(Ex') -A y) as Hcomp. apply Soup_comp. inversion Hcomp.
+   apply H0. apply WF_Relation with (a:=η)(b:=y)(r:=Ex'-hbo) in Hbo'1 . inversion Hbo'1.
+   apply Hbo_Domain in H2. contradiction.
+   apply Hreduct. 
+Qed.
+
+
 Lemma HBO'_HBO: forall (Ex Ex':Exec)(a b η:Effect) (r:ReplID) (i:SeqNo)(s:SessID)(op:OperName)(θ:Store),
                   [ θ |- Ex, < s, i, op > ~ r ~> Ex', η] -> WF Ex -> (~(a=η)) -> (~(b=η))-> Ex'-hbo a b -> Ex-hbo a b.
 Proof.
   intros Ex Ex' a b η r i s op θ H HWF Haη Hbη Hbo'.
-
-
-
-
-
-  
   induction Hbo'.
   Case"induction base".
     subst. inversion H0.
@@ -104,47 +162,27 @@ Proof.
                              { admit. }
     apply t_step. right. inversion H. subst. specialize (H11 x y). apply H11 in H1.
     inversion H1. inversion H2. contradiction. apply H2.
-
+    
 
     
   Case "induction step".
     apply t_trans with (y:=y).
-    apply IHHbo'1; try (auto).
-    intro. subst. intuition. apply Hbη. 
-
-
-    
-    apply CorrectFreshness in H. intro. subst.
-
-    
+    apply IHHbo'1; try (auto). intro.
+    subst. apply  HBO'_HBO_help in H. apply H. exists z.
+    split.
     assert (forall (Ex:Exec)(eff:Effect), (Ex-A eff)\/(~ Ex-A eff)) as Hcomp. apply Soup_comp.
-    specialize (Hcomp Ex' y). inversion Hcomp. apply H0.
-    apply WF_Relation with (r:= Ex'-hbo) (a:=x)(b:=y) in Hbo'1.
-    inversion Hbo'1. apply Hbo_Domain in H2. contradiction.
+    specialize (Hcomp Ex' z). inversion Hcomp.
+    apply H0. apply WF_Relation with (r:=Ex'-hbo) (a:=η)(b:=z) in Hbo'2.
+    inversion Hbo'2. apply Hbo_Domain in H2. contradiction. apply Hbo'2.
 
-    
-    intro. subst. remember η as y.
-    
-
-    
-    apply  HBO'_newEff  with (a:=x)(b:=y) in H. apply H. apply HWF.
-    apply Hboaη. apply Ha.  assert (forall (Ex:Exec)(eff:Effect), (Ex-A eff)\/(~ Ex-A eff)) as Hcomp.
-    apply Soup_comp. specialize (Hcomp Ex' y). inversion Hcomp. apply H0.
-    apply WF_Relation with (r:= Ex'-hbo) (a:=x)(b:=y) in Hbo'1.
-    inversion Hbo'1. apply Hbo_Domain in H2. contradiction.
-    
-    intro. rewrite H0 in Hbo'2.
-    auto.
-   Abort.
-
-
-
-
-
-    
-  apply HWF. apply Hboaη. apply Ha. apply Hb. 
+    apply IHHbo'2; try (auto). intro.
+    subst. apply  HBO'_HBO_help in H. apply H. exists z.
+    split.
+    assert (forall (Ex:Exec)(eff:Effect), (Ex-A eff)\/(~ Ex-A eff)) as Hcomp. apply Soup_comp.
+    specialize (Hcomp Ex' z). inversion Hcomp.
+    apply H0. apply WF_Relation with (r:=Ex'-hbo) (a:=η)(b:=z) in Hbo'2.
+    inversion Hbo'2. apply Hbo_Domain in H2. contradiction. apply Hbo'2.
 Qed.
-
 
 
   
@@ -342,9 +380,6 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
           simpl in H4. unfold In in H4. apply H4 in H.
           assert (vis' a η). rewrite H14. left. auto.
           left. left. apply H0.
-          
-
-
 
          *SSCase"a=η".
          rewrite H. right. apply  Eff_Equi_refl.

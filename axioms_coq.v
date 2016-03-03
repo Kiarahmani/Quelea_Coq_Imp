@@ -69,7 +69,12 @@ Axiom natSeq: forall ss:SeqNo, ~(ss+1 <= (ss-1)).
 Axiom  SO_NewEff: forall (Θ: Store)(Ex Ex':Exec) (opk:op_key)(η:Effect)(r:ReplID),
                                           [Θ|-Ex, opk ~r~> Ex', η] -> (forall a:Effect, Θ r a -> ~ Ex-so η a).
 
+
+
+
 (*So holds if an effects precedes another*)
+
+Axiom SO_Seq_General : forall (Ex:Exec) (a b:Effect), (Ex-so a b) <-> (lt (seq a) (seq b)).
 Axiom  SO_Seq : forall (Ex:Exec)(a b c:Effect), Ex-so a b -> seq b = seq c - 1 -> Ex-so a c.
 Axiom SO_SeqII : forall (Ex:Exec)(a b :Effect), seq a = seq b -1  -> Ex-so a b.
 Axiom  SO_SeqIII : forall (Ex:Exec)(a b c:Effect), Ex-so a b -> Ex-so b c  -> Ex-so a c.
