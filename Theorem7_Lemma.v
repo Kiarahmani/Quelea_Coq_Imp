@@ -61,21 +61,21 @@ Qed.
 
 (* if hbo(a,b) holds, then η is not equal to either a or b   *)
 Lemma HBO'_newEff: forall (Ex Ex':Exec)(a b η:Effect) (r:ReplID) (i:SeqNo)(s:SessID)(op:OperName)(θ:Store),
-                     [ θ |- Ex, < s, i, op > ~ r ~> Ex', η] -> WF Ex ->
-                     Ex'-hbo a η -> Ex'-A a -> Ex'-A b ->  Ex'-hbo b η  ->(~(a=η))/\ (~(b=η)).
-Proof. intros Ex Ex' a b η r i s op θ H HWF HBOa Ha Hb HBOb. 
-       split.   
-         intro Haη. rewrite <- Haη in HBOa. 
-         assert (WF Ex') as WF'. { apply Lemma5 in H. apply H. apply HWF. }
+                     [ θ |- Ex, < s, i, op > ~ r ~> Ex', η] -> WF Ex -> Ex'-hbo a b ->
+                      Ex'-A a -> Ex'-A b  ->~((a=η)/\ (b=η)).
+
+Proof. intros Ex Ex' a b η r i s op θ Hreduct HWF HBO'  Ha Hb . 
+       intro H.  inversion H.
+       rewrite H0 in HBO'. rewrite H1 in HBO'.
+         assert (WF Ex') as WF'. { apply Lemma5 in Hreduct. apply Hreduct. apply HWF. }
          apply WellFormed_res1 in WF'.
-         destruct_conjs. clear H0 H1; rename H2 into HBcyc. specialize (HBcyc a). 
-         apply HBcyc. apply Ha. apply HBO_HB. apply HBOa.
-        
-         intro Hbη. rewrite <- Hbη in HBOb. 
-         assert (WF Ex') as WF'. { apply Lemma5 in H. apply H. apply HWF. }
-         apply WellFormed_res1 in WF'.
-         destruct_conjs. clear H0 H1; rename H2 into HBcyc. specialize (HBcyc b). 
-         apply HBcyc. apply Hb. apply HBO_HB. apply HBOb.
+         destruct_conjs. clear H2 H3; rename H4 into HBcyc. specialize (HBcyc η). 
+         apply HBcyc.
+         assert ( (Ex') -A η \/  ~(Ex') -A η) as Hcomp. apply Soup_comp.
+         inversion Hcomp. apply H2.
+         apply WF_Relation with (a:=η)(b:=η)(r:=Ex'-hbo) in HBO'. inversion HBO'.
+         apply Hbo_Domain in H3. apply H3.
+         apply HBO_HB. apply HBO'.              
  Qed.
 
 
@@ -142,11 +142,11 @@ Qed.
 
 
 Lemma HBO'_HBO: forall (Ex Ex':Exec)(a b η:Effect) (r:ReplID) (i:SeqNo)(s:SessID)(op:OperName)(θ:Store),
-                  [ θ |- Ex, < s, i, op > ~ r ~> Ex', η] -> WF Ex -> (~(a=η)) -> (~(b=η))-> Ex'-hbo a b -> Ex-hbo a b.
+                  [ θ |- Ex, < s, i, op > ~ r ~> Ex', η] -> WF Ex -> ~(b=η)-> Ex'-hbo a b -> Ex-hbo a b.
 Proof.
-  intros Ex Ex' a b η r i s op θ H HWF Haη Hbη Hbo'.
+   intros Ex Ex' a b η r i s op θ H HWF Hbη Hbo'.
   induction Hbo'.
-  Case"induction base".
+   -Case"induction base".
     subst. inversion H0.
     inversion H1.
     apply t_step. left. unfold soo. split. {
@@ -155,10 +155,9 @@ Proof.
                              { admit. }
     apply t_step. right. inversion H. subst. specialize (H11 x y). apply H11 in H1.
     inversion H1. inversion H2. contradiction. apply H2.
-    
-
-    
-  Case "induction step".
+  
+ 
+  -Case "induction step".
     apply t_trans with (y:=y).
     apply IHHbo'1; try (auto). intro.
     subst. apply  HBO'_HBO_help in H. apply H. exists z.
@@ -167,15 +166,18 @@ Proof.
     specialize (Hcomp Ex' z). inversion Hcomp.
     apply H0. apply WF_Relation with (r:=Ex'-hbo) (a:=η)(b:=z) in Hbo'2.
     inversion Hbo'2. apply Hbo_Domain in H2. contradiction. apply Hbo'2.
-
-    apply IHHbo'2; try (auto). intro.
-    subst. apply  HBO'_HBO_help in H. apply H. exists z.
-    split.
-    assert (forall (Ex:Exec)(eff:Effect), (Ex-A eff)\/(~ Ex-A eff)) as Hcomp. apply Soup_comp.
-    specialize (Hcomp Ex' z). inversion Hcomp.
-    apply H0. apply WF_Relation with (r:=Ex'-hbo) (a:=η)(b:=z) in Hbo'2.
-    inversion Hbo'2. apply Hbo_Domain in H2. contradiction. apply Hbo'2.
+    apply IHHbo'2; try (auto). 
 Qed.
+
+
+
+
+
+
+
+
+  
+
 
 
   
