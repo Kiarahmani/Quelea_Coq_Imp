@@ -48,16 +48,6 @@ Definition Models (Ex:Exec) (cont:contract_Contract) (eff:Effect) : Prop :=
 Notation " A '|=' B " := (Models A B) (at level 30).
 
 
-Lemma hbo'_help_new : forall (Ex Ex':Exec)(a η:Effect) (r:ReplID) (i:SeqNo)(s:SessID)(op:OperName)(θ:Store),
-                        [ θ |- Ex, < s, i, op > ~ r ~> Ex', η] -> WF Ex -> Ex'-A a ->
-                        Ex'-hbo a η.
-  Proof.
-    intros Ex Ex' a η r i s op θ Hreduct HWF HAa.
-    apply t_step.
-    right.
-    inversion Hreduct.
-    specialize (H8  a η).
-
     
 
 Theorem theorem7 : forall  (Ex Ex':Exec)(Θ Θ':Store)(Σ: SessSoup)(τ: ConsCls)(ss:SessID)
@@ -98,8 +88,9 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
          assert False. apply Triv. right. rewrite H10. reflexivity.
          contradiction.
         +SCase"[EC]". subst.
-         apply Injection_Help in H0. Focus 2. apply H1.
-         intuition; subst; clear H H1; rename ii into i; rename θ' into θ; rename ss into s;rename H7 into H1.
+         apply Injection_Help' with (η:=η)(Ex':=Ex')(Ex:=Ex)(θ:=θ')(θ':=θ')in H0. Focus 2. apply H1.
+         Focus 2. apply H.
+         intuition; subst; clear H H1; rename θ' into θ;rename H7 into H1.
          inversion H1; subst. compute.
           intros a Ha; intros b Hb. intros; intuition. 
          rewrite H9 in H5. intuition.
@@ -114,7 +105,6 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
          apply HBO'_HBO with (a:=a)(b:=b) in H1.  apply H1.
          apply HWF. apply H4.
          rewrite HeqEx'. apply HBO'.
-         (**)
          unfold CausCons in HCausCons.     
          assert ((θ r) a). specialize (HCausCons r a b). apply HCausCons.
          apply H5.
@@ -126,62 +116,62 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
 
 
         +SCase"[CC]". subst.
-         apply Injection_Help in H0. Focus 2. apply H1. intuition.
+         apply Injection_Help_CC with (η:=η)(Ex':=Ex')(Ex:=Ex)(θ:=θ')(θ':=θ') in H0. Focus 2. apply H1.
+         Focus 2. apply H.
+         intuition.
          subst. clear H H1.
-         rename ii into i; rename ss into s; rename θ' into θ. simpl in H5.
+         rename θ' into θ. simpl in H5.
          unfold Models. (**)
          inversion H8. subst.
          simpl. intros ef HA' HBO'. rename ef into a.
          assert ((E A' vis' so' sameobj')-hbo a η). intuition.
          apply Inversion_HBO_Help with (vis:=vis')(so:=so')(sameobj:=sameobj')(A:=A') in H.
-
-         (*begin change*)
+         Focus 2. reflexivity.
+         
          destruct H.
-         *
-         destruct H as [c G]. unfold Rel_Union in G. inversion G.
-         inversion H0.       
-          generalize (H10 c η). intro. rewrite H3 in H1.
-          inversion H1.  unfold CausCons in HCausCons. specialize (HCausCons r a c).
-          inversion H9. apply HCausCons in H11. 
-          specialize (H10 a η). rewrite H10.
-          left. split. apply H11. reflexivity.
-          assert ((E A vis so sameobj)-hbo a c) as HBO.
-          apply HBO'_HBO with (a:=a)(b:=c) in H8.  apply H8.
-          apply  HBO'_newEff  with (a:=a)(b:=c) in H8. apply H8. apply HWF. apply H.
-          apply  HBO'_newEff  with (a:=a)(b:=c) in H8. apply H8. apply HWF. apply H.
-          apply H.
-          apply HBO.
-          apply CorrectFreshness in H8. compute in H8. inversion H9. inversion H11.
-          apply H8 in H16. contradiction.
-          
-          assert ((θ r) c). apply H5. compute. apply first. compute in H1. apply H1.
-          assert ((E A vis so sameobj)-hbo a c).
-          apply HBO'_HBO with (a:=a)(b:=c) in H8.  apply H8.
-          apply  HBO'_newEff  with (a:=a)(b:=c) in H8. apply H8. apply HWF. apply H.
-          apply  HBO'_newEff  with (a:=a)(b:=c) in H8. apply H8. apply HWF. apply H.
-          apply H.
-          unfold CausCons in HCausCons. specialize (HCausCons r a c).
-          assert (θ r a). apply HCausCons. apply H3. apply H9.
-          specialize (H10 a η). rewrite H10.
-          left. split. apply H11. reflexivity.
+         *SSCase"exists c s.t. hbo a c and so\/vis c η".
+          destruct H as [c G]. unfold Rel_Union in G. inversion G.
+          clear G; rename H into HBO'ac;rename H0 into Hstepcη.
+          inversion Hstepcη; clear Hstepcη.
+          (*1*)assert ((θ r) c).  specialize (H10 c η). rewrite H10 in H.
+               inversion H. apply H0. apply CorrectFreshness in H8. inversion H0.
+               simpl in H8. inversion H1. contradiction.
+         
+          (*2*)assert ((E A vis so sameobj)-hbo a c).
+              apply HBO'_HBO with (a:=a)(b:=c) in H8.  apply H8.
+              apply HWF. intro. apply Freshness  in H8. rewrite H1 in H0. contradiction.
+              apply HBO'ac. 
 
-         * destruct H.  Focus 2. apply H.
-           specialize (H10 a). rewrite H10. left. split.
-           apply H5. compute. apply first. compute in H. apply H. reflexivity.
+         unfold CausCons in HCausCons. specialize (HCausCons r a c).
+         assert ((θ r) a). auto. specialize (H10 a η). rewrite H10. auto.
 
+  
+         inversion H; clear H; rename H0 into H; clear H1.
+         (*1*)assert ((θ r) c) as Hc.
+              apply H5. compute. apply first. apply H.
+         
+         (*2*)assert ((E A vis so sameobj)-hbo a c) as Hbo.
+              apply HBO'_HBO with (a:=a)(b:=c) in H8.  apply H8.
+              apply HWF. intro. apply Freshness  in H8. rewrite H0 in Hc. contradiction.
+              apply HBO'ac.
+
+         specialize (H10 a η). rewrite H10. left. split. Focus 2. reflexivity.
+         unfold CausCons in HCausCons. specialize (HCausCons r a c). apply HCausCons.
+         apply Hc. apply Hbo.
+                                                                         
+         *SSCase"One step hbo".
+         inversion H; clear H; rename H0 into H.
+         inversion H; clear H; clear H1; rename H0 into H.
+         specialize (H10 a η). rewrite H10. left. split. Focus 2. reflexivity.
+         compute in H5. specialize (H5 a). apply H5. apply first. apply H.         
+         apply H.
+         
            
-           
-
-
-
-         *SSCase"Trivial".
-          reflexivity.
-
-
 
         +SCase "[SC]".
-         subst.  apply Injection_Help in H0. Focus 2. apply H1.
-         intuition; subst; clear H1 H; rename ii into i; rename ss into s; rename oplist into σ.
+         subst.  apply Injection_Help' with (η:=η)(Ex':=Ex')(Ex:=Ex)(θ:=θ)(θ':=θ') in H0.
+         Focus 2. apply H1. Focus 2. apply H.
+         intuition; subst; clear H1 H.
          inversion H3.
          subst.
          unfold Models; 

@@ -20,7 +20,7 @@ Module  Config.
   Definition SessSoup := (Ensemble Soup_Ing).
   Notation " '<<' A ',' B ',' C  '>>'  " := (mkSoup_Ing A B C)(at level 10).
   Definition WF_union (S:SessSoup) (I:Soup_Ing): Prop := ~In Soup_Ing S I. 
-  Axiom  Sess_Equal : forall (S S':SessSoup), S=S' -> forall (I:Soup_Ing), (In Soup_Ing S I -> In Soup_Ing S' I).
+  Axiom  Sess_Equal : forall (S S':SessSoup), S=S' <-> forall (I:Soup_Ing), (In Soup_Ing S I <-> In Soup_Ing S' I).
 
 
 

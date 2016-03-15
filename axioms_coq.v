@@ -42,7 +42,7 @@ Axiom CorrectFreshness: forall  (Θ:Store)(ex1 ex2:Exec) (opk:op_key) (eff:Effec
 Axiom sameobj_refl : forall (Ex:Exec)(e:Effect), Ex-sameobj e e.
 Axiom so_trans: forall (Ex:Exec)(a b c: Effect), Ex-so a b -> Ex-so b c -> Ex-so a c.
 Axiom sameobj_trans: forall (Ex:Exec)(a b c: Effect), Ex-sameobj a b -> Ex-sameobj b c -> Ex-sameobj a c.
-
+Axiom Sameobj_Def: forall  (Θ:Store) (Ex Ex':Exec)(opk:op_key) (η:Effect) (r:ReplID) (a b: Effect),  [Θ |- Ex, opk ~r~> Ex', η] -> Ex-A a -> Ex-A b -> Ex-sameobj a b.
 
 
 
