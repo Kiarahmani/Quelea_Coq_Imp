@@ -11,9 +11,19 @@ Module Operational_Semantics.
 Import Config.
 Import parameters.
 (*Specific Union for EFFVIS Rule*)
-Parameter equality_repl_id: ReplID->ReplID->bool. (*CHANGE this to a more general rule    #!#!##!*)
-Definition Store_Union  (Θ:Store) (r:ReplID) (η:Effect) (rcheck : ReplID): Exec_A   :=
-if (equality_repl_id r rcheck) then (Θ rcheck) else (Θ rcheck).
+
+Definition Rid_to_nat (r:ReplID): nat :=
+  match r with
+    |Rid_cons n => n
+  end.
+  
+  
+Definition F_Union (θ:Store)(r:ReplID)(η:Effect) (rcheck:ReplID) :  Exec_A :=
+  if (beq_nat (Rid_to_nat r)(Rid_to_nat rcheck)) then  (Union Effect (θ r) (Singleton Effect η)) else St_Dom_Error.
+
+Definition Store_Union (Θ:Store) (r:ReplID) (η:Effect) :=
+  Union (ReplID -> Exec_A) (Singleton (ReplID -> Exec_A) Θ) (Singleton (ReplID -> Exec_A)(F_Union Θ r η)).  
+  
 (*Return inverse of a relation in Effects*)
 Inductive rtrn_invs (rel:Relation) (n:Effect) : Ensemble Effect  :=
 first: forall m:Effect, (rel m n) -> (rtrn_invs rel n) m.
@@ -93,7 +103,8 @@ Reserved Notation "'[[' A , B , C '--' τ ',' n '-->' A' , B' , C' ']]'" (at lev
 Inductive Progress (η:Effect)(τ:ConsCls) :  Exec->Store->SessSoup ->Exec -> Store -> SessSoup ->Prop :=     
 
 |EFFVIS: forall (Σ: SessSoup) ( Θ Θ' :Store) (Ex:Exec) (r:ReplID),
-                                                                      (forall x:ReplID,(Θ' x)=(Store_Union Θ r η x))->
+                                                                      (In (Store) (Store_Union Θ r η)  Θ')->
+                                                                      (dom Θ' = dom Θ)-> (r∈ Θ) ->
                                                                       (Included Effect (Union Effect (rtrn_invs Ex-vis η) (rtrn_invs Ex-so η)) (Θ r))->
                                                                       (Ex-A η)->
                                                                        ~((Θ r)η)                                                                          

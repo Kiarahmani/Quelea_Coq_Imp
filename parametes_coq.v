@@ -7,7 +7,8 @@ Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Strings.String.
 
 Module parameters.
-  Parameter ReplID :Set.
+  Inductive ReplID:Type :=
+    |Rid_cons: nat -> ReplID .
   Parameter SessID : Set.
   Parameter OperName : Set.
   Parameter Value : Set.
@@ -16,6 +17,7 @@ Module parameters.
   Definition Relation := relation Effect.
   Parameter  Rel_dom : Relation -> (Ensemble Effect). 
   Definition Exec_A := (Ensemble Effect).
+  Parameter St_Dom_Error : Exec_A.
   Definition Store := ReplID -> Exec_A.
   Parameter Compute: Exec_A -> OperName -> Value.
   Parameter dom : Store -> (Ensemble ReplID).
