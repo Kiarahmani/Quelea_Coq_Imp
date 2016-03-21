@@ -4,11 +4,8 @@ Require Import Coq.Arith.EqNat.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Arith.Compare_dec.
-Require Import parametes_coq.
-Require Import config_coq.
+Require Import Definitions.
 Require Import oper_semantic_coq.
-Import Config.
-Import parameters.
 Import Operational_Semantics.
 Require Import contract_definition.
 Require Import Coq.Strings.String.

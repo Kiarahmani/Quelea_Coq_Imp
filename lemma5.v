@@ -5,13 +5,10 @@ Require Import Coq.Arith.EqNat.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Arith.Compare_dec.
-Require Import parametes_coq.
-Require Import config_coq.
+Require Import Definitions.
 Require Import oper_semantic_coq.
 Require Import axioms_coq.
 Require Import theorems_coq.
-Import Config.
-Import parameters.
 Import Operational_Semantics.
 
 (**************************************************************************************************)
@@ -20,12 +17,13 @@ Theorem Lemma5: forall (Θ: Store)(Ex Ex':Exec) (s:SessID) (i:SeqNo)(op:OperName
                                        [Θ|-Ex, <s,i,op> ~r~> Ex', η] -> (WF Ex) -> (WF Ex').
 
 Proof.
-  
+    
   intros Θ Ex Ex' s i op η r. intros H_reduct H_WF.    
   (*Inversion on the reduction*)
   inversion H_reduct;
-  clear H10 H1 H0 H H3 H6 s0 i0 op0 η0. rename H4 into  H_η; rename H5 into  H_η'; rename H8 into H_vis';
-  rename H11 into H_so';rename H12 into H_sameobj';rename H7 into H_Exec; rename H9 into H_Exec'.
+    clear H11 H1 H0 H H3 H6 s0 i0 op0 η0. rename H4 into  H_η; rename H5 into  H_η'. rename H13 into Hi.
+  rename H7 into H_vis'.
+  rename H9 into H_so'; rename H12 into H_sameobj';rename H8 into H_Exec; rename H10 into H_Exec'.
 
   (*Trivial assertions*)
   assert ((Ex')-A = A')                as H_EX'A.      rewrite <- H_Exec'; auto.
@@ -72,7 +70,18 @@ Proof.
           apply H_sameobj' in G1. exact G1. exact G3. }
 
   Case "----------------Proof of WF7 ".
-        {admit. }
+        {unfold WF7.
+         intros a b H.
+         intuition; apply WF_Relation with (a:=a)(b:=b) in H; destruct H as [Ha Hb].
+         -apply So_Domain in Ha; auto.
+         -apply Vis_Domain in Ha; auto.
+         -apply Sameobj_Domain in Ha; auto.
+
+         -apply So_Domain in Hb; auto.
+         -apply Vis_Domain in Hb; auto.
+         -apply Sameobj_Domain in Hb; auto.
+        }
+        
 Qed.
 
  

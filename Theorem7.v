@@ -6,9 +6,7 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Program.Tactics.
-Require Import parametes_coq.
-Require Import config_coq.
-Import Config.
+Require Import Definitions.
 Require Import oper_semantic_coq.
 Require Import axioms_coq.
 Require Import theorems_coq.
@@ -20,7 +18,6 @@ Require Import Theorem7_Lemma.
 Require Import Coq.Arith.Minus.
 Require Import Coq.Arith.Lt.
 
-Import parameters.
 Import Operational_Semantics.
 
 
@@ -88,11 +85,8 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
          inversion H6. unfold WF_union in WFl. contradiction.
          inversion H7. 
          subst.
-         apply Seq_Uniq in H10.
-         assert (forall i:SeqNo, i=i-1\/i=i+1 -> False) as Triv. apply Why_Coq .
-         specialize (Triv i).
-         assert False. apply Triv. right. rewrite H10. reflexivity.
-         contradiction.
+         apply Seq_Uniq in H10. omega.
+         
         +SCase"[EC]". subst. 
          intuition; subst; clear H H1; rename θ' into θ;rename H7 into H1.
          inversion H1; subst. compute.
@@ -101,13 +95,13 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
           assert ((E A' vis' so' sameobj')-hbo a b) as HBO'; intuition.
           remember (E A vis so sameobj) as Ex.
           assert ((θ r) b). {
-          specialize (H10 b η). rewrite H10 in H6. inversion H6. apply H9.
-          destruct H9 as [Htemp Hvisbη]; clear Htemp. apply WF_Relation with (r:=vis)(a:=b)(b:=η) in Hvisbη.
+          specialize (H9 b η). rewrite H9 in H6. inversion H6. apply H10.
+          destruct H10 as [Htemp Hvisbη]; clear Htemp. apply WF_Relation with (r:=vis)(a:=b)(b:=η) in Hvisbη.
           destruct Hvisbη as [Htemp Hdomη]; clear Htemp.
           replace vis with Ex-vis in Hdomη.
           apply Vis_Domain in Hdomη. apply CorrectFreshness in H1. contradiction. rewrite HeqEx. auto. }
 
-          assert ( ~ ( b = η)) as Hneqbη. { intro. apply Freshness in H1. rewrite <- H12 in H1. contradiction. }
+          assert ( ~ ( b = η)) as Hneqbη. { intro. apply Freshness with (r0:=r) in H1;auto. rewrite <- H13 in H1. contradiction. }
           assert (Ex-hbo a b) as HBOab. {   apply HBO'_HBO with (a:=a)(b:=b) in H1.  apply H1.
                                             apply HWF. apply Hneqbη. apply HBO'. }
           assert ((θ r) a) as Hainθ. {  unfold CausCons in HCausCons. specialize (HCausCons r a b).
@@ -116,11 +110,11 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
                                         destruct Hcomp; auto.
                                         apply WF_Relation with (a:=a)(b:=b)(r:=Ex-hbo) in HBOab.
                                         destruct HBOab.
-                                        apply Hbo_Domain in H15. apply H15. intuition.
-                                        apply H9. apply HBOab.  }
+                                        apply Hbo_Domain in H16. apply H16. intuition.
+                                        apply H10. apply HBOab.  }
 
 
-          specialize (H10 a η). rewrite H10. left. split. apply Hainθ. reflexivity.
+          specialize (H9 a η). rewrite H9. left. split. apply Hainθ. reflexivity.
                                             
                                                            
   
@@ -130,7 +124,7 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
          clear H H1.
          rename θ' into θ. simpl in H5.
          unfold Models. (**)
-         inversion H8. subst. rename H11 into HVis'.
+         inversion H8. subst. rename H10 into HVis'.
          simpl. intros ef HA' HBO'. rename ef into a.
          assert ((E A' vis' so' sameobj')-hbo a η). intuition.
          apply Inversion_HBO_Help with (vis:=vis')(so:=so')(sameobj:=sameobj')(A:=A') in H.
@@ -147,8 +141,8 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
           inversion H2. contradiction.
          
           (*2*)assert ((E A vis so sameobj)-hbo a c).
-              apply HBO'_HBO with (a:=a)(b:=c) in H8.  apply H8.
-              apply HWF. intro. apply Freshness  in H8. rewrite H2 in H1. contradiction.
+              apply HBO'_HBO with (a:=a)(b:=c) in H8.  apply H8. 
+              apply HWF. intro. apply Freshness with (r0:=r) in H8;auto. rewrite H2 in H1. contradiction.
               apply HBO'ac. 
 
          unfold CausCons in HCausCons. specialize (HCausCons r a c).
@@ -165,7 +159,7 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
          
          (*2*)assert ((E A vis so sameobj)-hbo a c) as Hbo.
               apply HBO'_HBO with (a:=a)(b:=c) in H8.  apply H8.
-              apply HWF. intro. apply Freshness  in H8. rewrite H1 in Hc. contradiction.
+              apply HWF. intro. apply Freshness with (r0:=r) in H8;auto. rewrite H1 in Hc. contradiction.
               apply HBO'ac.
 
          specialize (HVis' a η). rewrite HVis'. left. split. Focus 2. reflexivity.
@@ -193,7 +187,7 @@ Proof. intros Ex Ex' θ θ' Σ τ s i σ η op. intros Ing1 Ing2.
           remember (E A' vis' so' sameobj')-hbo as hbo'.
           unfold Included in  H4. specialize (H4 a).
           simpl in H4. unfold In in H4. apply H4 in H0.
-          assert (vis' a η). rewrite H14. left. auto.
+          assert (vis' a η). rewrite H13. left. auto.
           left. left. apply H1.
 
          *SSCase"a=η".

@@ -6,9 +6,7 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Program.Tactics.
-Require Import parametes_coq.
-Require Import config_coq.
-Import Config.
+Require Import Definitions.
 Require Import oper_semantic_coq.
 Require Import axioms_coq.
 Require Import theorems_coq.
@@ -18,7 +16,6 @@ Require Import contract_Eval.
 Require Import lemma5.
 Require Import Coq.Arith.Minus.
 Require Import Coq.Arith.Lt.
-Import parameters.
 Import Operational_Semantics.
 
 Definition m:EffVar := effvar "m".
@@ -126,7 +123,7 @@ Proof.
    
    +SCase"soo'".
     inversion Hsoo'; clear Hsoo'; clear Htemp; rename H into Hso'; rename H0 into Hsameobj'; rename x into η.
-    inversion Hreduct; subst. simpl in Hso'. remember (E A vis so sameobj) as Ex; remember (E A' vis' so' sameobj') as Ex'.
+    inversion Hreduct; subst. rename H13 into Hi. simpl in Hso'. remember (E A vis so sameobj) as Ex; remember (E A' vis' so' sameobj') as Ex'. rename  H9 into H11.  rename H7 into H8.
     specialize (H11 η y). rewrite H11 in Hso'.
     inversion Hso'.
     *SSCase"new effect". inversion H.  clear H. rename H0 into Hso. subst y.
@@ -139,9 +136,10 @@ Proof.
      replace so with Ex-so in H0. apply So_Domain in H0. contradiction.
      rewrite HeqEx. auto.  
    +SCase"vis'". clear Htemp. inversion Hreduct. subst. rename x into η.
+    rename  H9 into H11.  rename H7 into H8.
     specialize (H8 η y). simpl in Hvis'. apply H8 in Hvis'.
     inversion Hvis'.
-    *SSCase"θ r η /\ y = η". inversion H. apply Freshness in Hreduct. contradiction.
+    *SSCase"θ r η /\ y = η". inversion H. apply Freshness with (r0:=r) in Hreduct; auto. 
     *SSCase"(A η /\ A y) /\ vis η y". apply CorrectFreshness in Hreduct. simpl in  Hreduct. inversion H.
      inversion H0. contradiction.
      
@@ -172,16 +170,16 @@ Proof.
     +SCase"Proof from soo".
      unfold soo. split.
      *SSCase"Proof of so".
-      inversion H. subst. specialize (H16 x y). apply H16 in H2.
+      inversion H. subst. specialize (H14 x y). apply H14 in H2.
       inversion H2. inversion H4.  contradiction. apply H4.
      *SSCase"Porof of saemobj".
       assert (~(x=η)).  intro.
-      subst. inversion H. subst η0 op0 i0 s0. specialize (H16 η y). replace Ex'-so with so' in H2.
-      rewrite H16 in H2. inversion H2. inversion H4. contradiction.
+      subst. inversion H. subst η0 op0 i0 s0. specialize (H14 η y). replace Ex'-so with so' in H2.
+      rewrite H14 in H2. inversion H2. inversion H4. contradiction.
       replace so with Ex-so in H4. apply CorrectFreshness in H.
       apply WF_Relation with (a:=η)(b:=y)(r:=Ex-so) in H4.  inversion H4. apply So_Domain in H5.
       contradiction.
-      rewrite<- H12. auto. rewrite<- H14. auto.                                                    
+      rewrite<- H13. auto. rewrite<- H15. auto.                                                    
       apply WF_Relation with (a:=x)(b:=y)(r:=Ex'-so) in H2. inversion H2.
       apply So_Domain in H6.  apply So_Domain in H5. inversion H.
       subst η0 op0 i0 s0. assert (Ex-A x). specialize (H14 x). simpl in H5. subst.
@@ -189,9 +187,9 @@ Proof.
       assert (Ex-A y).  specialize (H14 y). simpl in H6. subst. rewrite <- H14 in H6.
       simpl. inversion H6. apply H8. contradiction.
       apply Sameobj_Def with (a:=x)(b:=y) in H.
-      rewrite<-H15 in H. apply H. apply H7. apply H8.
+      rewrite<-H16 in H. apply H. apply H7. apply H8.
     +SCase"Proof from vis".
-    apply t_step. right. inversion H. subst. specialize (H11 x y). apply H11 in H1.
+    apply t_step. right. inversion H. subst. specialize (H10 x y). apply H10 in H1.
     inversion H1. inversion H2. contradiction. apply H2.
    
   -Case "induction step".
