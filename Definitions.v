@@ -14,7 +14,7 @@ Parameter Value : Set.
 Definition SeqNo := nat.
 Inductive ConsCls:Type := ec: ConsCls |cc: ConsCls |sc: ConsCls.
 Inductive op_cls :Type := mkop_cls: OperName -> ConsCls -> op_cls. 
-
+Notation " OP '__' t " := (mkop_cls OP t) (at level 0).
 
 (*================================ Effects and Soups and Sessions*)
 
@@ -99,6 +99,11 @@ Notation "Ex -hb" := (hb Ex) (at level 0).
 Notation "Ex -hbo" := (hbo Ex) (at level 0).
 
 
+(*Causally Consistent Store under an Execution*)
+Definition CausCons (Θ:Store)(Ex:Exec):= forall(r: ReplID)(a η:Effect),
+                                           (Ex-A a)->((dom Θ) r)->((Θ r) η) -> ((Ex-hbo) a η) -> ((Θ r) a). 
+
+
 
 (*================================ Well-Formedness of Executions *)
 (*!!! This should be changed to a clean inductive definition*)
@@ -113,3 +118,11 @@ Definition WF5 (Ex:Exec) := forall (a b:Effect),   (Ex-A a) -> (Ex-A b) ->(Ex-sa
 Definition WF6 (Ex:Exec) := forall (a b c:Effect), (Ex-A a) -> (Ex-A b) ->(Ex-A c) -> (Ex-sameobj a b)/\(Ex-sameobj b c) -> (Ex-sameobj a c).
 Definition WF7 (Ex:Exec) := forall (a b : Effect), (~(Ex-A a))\/(~(Ex-A b)) -> ~(Ex-so a b) /\ ~(Ex-vis a b) /\  ~(Ex-sameobj a b).
 
+
+
+
+
+(*================================General Definitions *)
+(*Equality between two Ensemble*)
+Definition Set_Equi (A:Type) (E1 E2: Ensemble A) : Prop :=
+  (Included A E1 E2)/\(Included A E2 E1).
